@@ -7,25 +7,22 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision
+import torchvision.models as models
+
 
 
 class ResNet50(nn.Module):
-
 
     def __init__(self):
         super().__init__()
         self.network = torchvision.models.resnet50(pretrained=True)
 
         num_in_features = self.network.fc.in_features
-        self.network.fc = nn.Sequential(
-            nn.Linear(num_in_features, 16),
-            nn.ReLU(),
-            nn.Linear(16,1))
+        self.network.fc = nn.Linear(num_in_features, 2)
 
-    # def forward(self, x):
-    #     return x
+
     def forward(self, x):
-        return torch.sigmoid(self.network(x))
+        return self.network(x)
 
 
     def freeze(self):
@@ -51,24 +48,31 @@ class ResNet50(nn.Module):
                 running_loss = 0.0
                 running_corrects = 0
 
+
+
                 for inputs, labels in dataloaders[phase]:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
+                    # print(labels)
 
                     optimizer.zero_grad()
 
                     outputs = model(inputs)
+                    # print(outputs)
                     _, preds = torch.max(outputs, 1)
-
-                    labels = labels.to(torch.float32)
-                    loss = criterion(outputs, labels.unsqueeze(1))
+                    #labels = labels.to(torch.float32)
+                    # print('miaw_labels')
+                    loss = criterion(outputs, labels)
+                    # print('miaw_loss')
 
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
 
+
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
+
 
                 epoch_loss = running_loss / len(dataloaders[phase].dataset)
                 epoch_acc = running_corrects / len(dataloaders[phase].dataset)
