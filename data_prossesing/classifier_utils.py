@@ -6,7 +6,7 @@ def get_default_device():
     else:
         return torch.device('cpu')
 
-
-# def accuracy(outputs, labels):
-#     _, preds = torch.max(outputs, dim=1)
-#     return torch.tensor(torch.sum(preds == labels).item() / len(preds)), preds
+# def to_device(data, device):
+#     if isinstance(data, (list,tuple)):
+#         return [to_device(x, device) for x in data]
+#     return data.to(device, non_blocking=True)
