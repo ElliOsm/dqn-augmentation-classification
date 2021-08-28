@@ -1,53 +1,133 @@
-import time
-import torch
-from thesis.model.ResNet50_classifier import ResNet50
-from thesis.data_prossesing.data_pytorch import data_reader
-from thesis.data_prossesing.classifier_utils import get_default_device
-import os
+import pandas as pd
 import numpy as np
+import time
+import copy
+import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 import torchvision
-import matplotlib.pyplot as plt
-
-import yaml
-import copy
-
-CUDA_LAUNCH_BLOCKING=1
-
-with open('../../config.yaml', 'r') as f:
-    params = yaml.safe_load(f)
-
-# set device
-device = get_default_device()
-print("Device:", device)
-
-model = ResNet50()
-model.freeze()
-model.to(device)
+import torchvision.models as models
+from thesis.data_prossesing.data_pytorch import load_image
 
 
-# load dataset
-data_dir = '../../data/train_i2a2_complete/data'
-dataloaders = data_reader(data_dir)
+
+class ResNet50(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.network = torchvision.models.resnet50(pretrained=True)
+
+        num_in_features = self.network.fc.in_features
+        self.network.fc = nn.Linear(num_in_features, 2)
 
 
-#https://datascience.stackexchange.com/questions/48369/what-loss-function-to-use-for-imbalanced-classes-using-pytorch
-class_count = [1108, 2991]
-w0 = (class_count[1]) / (class_count[0])
-w1 = (class_count[1]) / (class_count[1])
-
-weights = torch.FloatTensor([w0, w1]).to(device)
-print("Weights: ", weights)
-
-#criterion = nn.BCELoss()
-criterion = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.9,0.3]).to(device))
-optimiser = optim.Adam(model.parameters(),lr=0.0001)
-#optimiser = optim.SGD(model.parameters(),lr=0.001,momentum=0.9)
-num_epochs = 10
+    def forward(self, x):
+        return self.network(x)
 
 
-model = model.train_model(dataloaders,device,optimiser,criterion,num_epochs)
+    def freeze(self):
+        for param in self.network.parameters():
+            param.require_grad = False
 
-weight_dir = os.path.join('../..', 'weights', 'test_i2a2-brasil.hdf5')
-torch.save(model.state_dict(), weight_dir)
+        for param in self.network.fc.parameters():
+            param.require_grad = True
+
+    def train_model(model, dataloaders, device, optimizer, criterion, num_epochs):
+        torch.cuda.empty_cache()
+
+        since = time.time()
+        best_acc = 0.0
+
+        best_model_wts = model.state_dict()
+
+        for epoch in range(1, num_epochs + 1):
+            print('Epoch {}/{}'.format(epoch, num_epochs))
+            print('-' * 10)
+
+            for phase in ['train', 'val']:
+                since_epoch = time.time()
+                if phase == 'train':
+                    model.train()
+                else:
+                    model.eval()
+
+                running_loss = 0.0
+                running_corrects = 0
+
+                for inputs, labels in dataloaders[phase]:
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
+                    # print(labels)
+
+
+                    outputs = model(inputs)
+                    # print(outputs)
+                    _, preds = torch.max(outputs, 1)
+                    #labels = labels.to(torch.float32)
+                    loss = criterion(outputs, labels)
+
+                    if phase == 'train':
+                        optimizer.zero_grad()
+                        loss.backward()
+                        optimizer.step()
+
+                    running_loss += loss.item() * inputs.size(0)
+                    running_corrects += torch.sum(preds == labels.data)
+
+                epoch_loss = running_loss / len(dataloaders[phase].dataset)
+                epoch_acc = running_corrects / len(dataloaders[phase].dataset)
+
+                print('{} Loss: {:.4f} Acc: {:.4f}'.format(
+                    phase, epoch_loss, epoch_acc))
+
+                if phase == 'val' and epoch_acc > best_acc:
+                    best_acc = epoch_acc
+                    best_model_wts = copy.deepcopy(model.state_dict())
+
+        time_elapsed = time.time() - since
+        print('Training complete in {:.0f}m {:.0f}s'.format(
+            time_elapsed // 60, time_elapsed % 60))
+        print('Best val Acc: {:4f}'.format(best_acc))
+
+        model.load_state_dict(best_model_wts)
+        return model
+
+
+    def test_model(model, dataloader, device):
+        counter = 0
+        all = 0
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            model.eval()
+            for inputs, labels in dataloader:
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                # calculate outputs by running images through the network
+                outputs = model(inputs)
+
+                #https://stackoverflow.com/questions/59687382/testing-and-confidence-score-of-network-trained-with-nn-crossentropyloss
+                #print("without softmax: ",outputs)
+                probs = nn.Softmax(dim=1)
+                confidence_score = probs(outputs)
+                #print("confidence score: ",confidence_score)
+                if (torch.max(confidence_score)<0.6):
+                    # print(torch.max(confidence_score))
+                    # print("Not sure about prediction")
+                    counter = counter + 1
+                all = all +1
+
+                _, preds = torch.max(outputs, dim=1)
+                print(preds)
+                # compare predictions to true label
+                if (preds == labels):
+                    correct = correct + 1
+                total += labels.size(0)
+        print('\nTest Accuracy: %2d%% (%2d/%2d)' % (
+            100. * correct / total, correct, total))
+        print(counter ,"/", all)
+
+
+
