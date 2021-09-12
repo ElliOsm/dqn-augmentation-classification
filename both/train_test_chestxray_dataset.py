@@ -1,8 +1,10 @@
 import time
+import random
+
 import torch
 from thesis.model.ResNet50_classifier import ResNet50
 from thesis.data_prossesing.data_pytorch import data_reader_chestxray
-from thesis.data_prossesing.classifier_utils import get_default_device
+from thesis.data_prossesing.data_pytorch import get_default_device
 import os
 import numpy as np
 import torch.nn as nn
@@ -27,9 +29,11 @@ model.freeze()
 model.to(device)
 
 
+
+
 # load dataset
 #data_dir = '../data/train_i2a2_complete/data'
-data_dir = '../data/chest_xray'
+data_dir = '../../../../Desktop/thesis/thesis/thesis/thesis/data/chest_xray'
 dataloaders = data_reader_chestxray(data_dir)
 
 
@@ -40,7 +44,7 @@ w0 = (class_count[1]) / (class_count[0])
 w1 = (class_count[1]) / (class_count[1])
 
 weights = torch.FloatTensor([w0, w1]).to(device)
-print(weights)
+print("Weights: ", weights)
 
 
 #criterion = nn.BCELoss()
@@ -52,7 +56,7 @@ num_epochs = 10
 
 model = model.train_model(dataloaders,device,optimiser,criterion,num_epochs)
 
-weight_dir = os.path.join('../..', 'weights', 'ResNet50_weights_pytorch.hdf5')
+weight_dir = os.path.join('..','weights','train_test_chestxray_dataset.hdf5')
 torch.save(model.state_dict(), weight_dir)
 
 

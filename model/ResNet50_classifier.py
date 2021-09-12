@@ -8,7 +8,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision
 import torchvision.models as models
-from thesis.data_prossesing.data_pytorch import load_image
 
 
 
@@ -21,10 +20,8 @@ class ResNet50(nn.Module):
         num_in_features = self.network.fc.in_features
         self.network.fc = nn.Linear(num_in_features, 2)
 
-
     def forward(self, x):
         return self.network(x)
-
 
     def freeze(self):
         for param in self.network.parameters():
@@ -33,13 +30,13 @@ class ResNet50(nn.Module):
         for param in self.network.fc.parameters():
             param.require_grad = True
 
-    def train_model(model, dataloaders, device, optimizer, criterion, num_epochs):
+    def train_model(self, dataloaders, device, optimizer, criterion, num_epochs):
         torch.cuda.empty_cache()
 
         since = time.time()
         best_acc = 0.0
 
-        best_model_wts = model.state_dict()
+        best_model_wts = self.state_dict()
 
         for epoch in range(1, num_epochs + 1):
             print('Epoch {}/{}'.format(epoch, num_epochs))
@@ -48,9 +45,9 @@ class ResNet50(nn.Module):
             for phase in ['train', 'val']:
                 since_epoch = time.time()
                 if phase == 'train':
-                    model.train()
+                    self.train()
                 else:
-                    model.eval()
+                    self.eval()
 
                 running_loss = 0.0
                 running_corrects = 0
@@ -60,11 +57,14 @@ class ResNet50(nn.Module):
                     labels = labels.to(device)
                     # print(labels)
 
-
-                    outputs = model(inputs)
+                    outputs = self(inputs)
                     # print(outputs)
+
+                    probs = nn.Softmax(dim=1)
+                    outputs = probs(outputs)
+
                     _, preds = torch.max(outputs, 1)
-                    #labels = labels.to(torch.float32)
+                    # labels = labels.to(torch.float32)
                     loss = criterion(outputs, labels)
 
                     if phase == 'train':
@@ -83,51 +83,44 @@ class ResNet50(nn.Module):
 
                 if phase == 'val' and epoch_acc > best_acc:
                     best_acc = epoch_acc
-                    best_model_wts = copy.deepcopy(model.state_dict())
+                    best_model_wts = copy.deepcopy(self.state_dict())
 
         time_elapsed = time.time() - since
         print('Training complete in {:.0f}m {:.0f}s'.format(
             time_elapsed // 60, time_elapsed % 60))
         print('Best val Acc: {:4f}'.format(best_acc))
 
-        model.load_state_dict(best_model_wts)
-        return model
+        self.load_state_dict(best_model_wts)
+        return self
 
-
-    def test_model(model, dataloader, device):
+    def test_model(self, dataloader, device):
         counter = 0
         all = 0
         correct = 0
         total = 0
         with torch.no_grad():
-            model.eval()
+            self.eval()
             for inputs, labels in dataloader:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
                 # calculate outputs by running images through the network
-                outputs = model(inputs)
+                outputs = self(inputs)
 
-                #https://stackoverflow.com/questions/59687382/testing-and-confidence-score-of-network-trained-with-nn-crossentropyloss
-                #print("without softmax: ",outputs)
+                # https://stackoverflow.com/questions/59687382/testing-and-confidence-score-of-network-trained-with-nn-crossentropyloss
                 probs = nn.Softmax(dim=1)
-                confidence_score = probs(outputs)
-                #print("confidence score: ",confidence_score)
-                if (torch.max(confidence_score)<0.6):
-                    # print(torch.max(confidence_score))
-                    # print("Not sure about prediction")
-                    counter = counter + 1
-                all = all +1
-
+                outputs = probs(outputs)
                 _, preds = torch.max(outputs, dim=1)
-                print(preds)
-                # compare predictions to true label
-                if (preds == labels):
-                    correct = correct + 1
+                # # print(preds)
+                # # compare predictions to true label
+                if preds == labels:
+                    correct += labels.size(0)
                 total += labels.size(0)
         print('\nTest Accuracy: %2d%% (%2d/%2d)' % (
             100. * correct / total, correct, total))
-        print(counter ,"/", all)
+        # print("Confidense score",counter, "/", all)
 
-
-
+    def extract_features(self, image):
+        self.eval()
+        features = self(image)
+        return features
