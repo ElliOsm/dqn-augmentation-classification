@@ -30,7 +30,7 @@ model.to(device)
 
 # load dataset
 #data_dir = '../data/train_i2a2_complete/data'
-data_dir = '../data/chest_xray'
+data_dir = os.path.join('..','data','trainFolder' ,'data')
 dataloaders = data_reader_chestxray(data_dir)
 
 
