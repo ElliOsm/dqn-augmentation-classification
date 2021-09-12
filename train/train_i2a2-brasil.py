@@ -4,9 +4,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from data_prossesing.data_pytorch import data_reader
-from data_prossesing.data_pytorch import get_default_device
-from model import ResNet50
+from thesis.data_prossesing.data_pytorch import data_reader
+from thesis.data_prossesing.data_pytorch import get_default_device
+from thesis.model.ResNet50_classifier import ResNet50
 
 CUDA_LAUNCH_BLOCKING = 1
 
@@ -37,5 +37,5 @@ num_epochs = 10
 
 model = model.train_model(dataloaders, device, optimiser, criterion, num_epochs)
 
-weight_dir = os.path.join('../thesis', 'weights', 'test_i2a2-brasil.hdf5')
+weight_dir = os.path.join('../..', 'weights', 'test_i2a2-brasil.hdf5')
 torch.save(model.state_dict(), weight_dir)
