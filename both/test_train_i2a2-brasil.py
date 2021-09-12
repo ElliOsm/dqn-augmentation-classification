@@ -10,9 +10,6 @@ from thesis.model.ResNet50_classifier import ResNet50
 
 CUDA_LAUNCH_BLOCKING = 1
 
-with open('../config.yaml', 'r') as f:
-    params = yaml.safe_load(f)
-
 # set device
 device = get_default_device()
 print("Device:", device)
@@ -22,7 +19,7 @@ model.freeze()
 model.to(device)
 
 # load dataset
-data_dir = '../../../../Desktop/thesis/thesis/thesis/thesis/data/train_i2a2_complete/data'
+data_dir = os.path.join('..','data','train_i2a2_complete' ,'data')
 dataloaders = data_reader(data_dir)
 
 item = next(iter(dataloaders['test']))

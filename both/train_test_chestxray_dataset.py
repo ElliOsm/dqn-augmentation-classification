@@ -17,9 +17,6 @@ import copy
 
 CUDA_LAUNCH_BLOCKING=1
 
-with open('../config.yaml', 'r') as f:
-    params = yaml.safe_load(f)
-
 # set device
 device = get_default_device()
 print("Device:", device)
@@ -33,7 +30,7 @@ model.to(device)
 
 # load dataset
 #data_dir = '../data/train_i2a2_complete/data'
-data_dir = '../../../../Desktop/thesis/thesis/thesis/thesis/data/chest_xray'
+data_dir = '../data/chest_xray'
 dataloaders = data_reader_chestxray(data_dir)
 
 

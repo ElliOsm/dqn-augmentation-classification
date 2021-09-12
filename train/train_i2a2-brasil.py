@@ -20,7 +20,7 @@ model.freeze()
 model.to(device)
 
 # load dataset
-data_dir = '../../../../../Desktop/thesis/thesis/thesis/thesis/data/train_i2a2_complete/data'
+data_dir = os.path.join('..','data','train_i2a2_complete' ,'data')
 dataloaders = data_reader(data_dir)
 
 # https://datascience.stackexchange.com/questions/48369/what-loss-function-to-use-for-imbalanced-classes-using-pytorch
@@ -37,5 +37,5 @@ num_epochs = 10
 
 model = model.train_model(dataloaders, device, optimiser, criterion, num_epochs)
 
-weight_dir = os.path.join('../..', 'weights', 'test_i2a2-brasil.hdf5')
+weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil.hdf5')
 torch.save(model.state_dict(), weight_dir)
