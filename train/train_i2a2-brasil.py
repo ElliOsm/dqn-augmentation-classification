@@ -28,10 +28,11 @@ dataloaders = data_reader(data_dir)
 class_count = [1108, 2991]
 w0 = (class_count[1]) / (class_count[0])
 w1 = (class_count[1]) / (class_count[1])
-weights = torch.FloatTensor([w0, w1]).to(device)
-print("Weights: ", weights)
 
-criterion = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.9, 0.3]).to(device))
+class_weights = torch.FloatTensor([w0, w1]).to(device)
+print("class_weights: ", class_weights)
+
+criterion = nn.CrossEntropyLoss(weight=class_weights)
 optimiser = optim.Adam(model.parameters(), lr=0.0001)
 num_epochs = 10
 

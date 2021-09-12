@@ -30,7 +30,7 @@ device = get_default_device()
 print("Device:", device)
 
 # load dataset
-data_dir = '../../../../Desktop/thesis/thesis/thesis/thesis/data/train_i2a2_complete/data'
+data_dir = os.path.join('..','data','train_i2a2_complete' ,'data')
 dataloaders = data_reader(data_dir)
 
 data = next(iter(dataloaders['test']))

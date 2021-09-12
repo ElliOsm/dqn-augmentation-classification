@@ -30,11 +30,11 @@ class_count = [1108, 2991]
 w0 = (class_count[1]) / (class_count[0])
 w1 = (class_count[1]) / (class_count[1])
 
-weights = torch.FloatTensor([w0, w1]).to(device)
-print("Weights: ", weights)
+class_weights = torch.FloatTensor([w0, w1]).to(device)
+print("class_weights: ", class_weights)
 
+criterion = nn.CrossEntropyLoss(weight=class_weights)
 # criterion = nn.BCELoss()
-criterion = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.9, 0.3]).to(device))
 optimiser = optim.Adam(model.parameters(), lr=0.0001)
 # optimiser = optim.SGD(model.parameters(),lr=0.001,momentum=0.9)
 num_epochs = 10
