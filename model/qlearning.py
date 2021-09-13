@@ -7,7 +7,7 @@ from torchvision import transforms
 from thesis.model.ResNet50_classifier import ResNet50
 
 
-class DQNAgent:
+class qlearning:
 
     def __init__(self):
         self.actions = {
