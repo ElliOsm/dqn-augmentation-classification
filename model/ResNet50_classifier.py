@@ -30,7 +30,7 @@ class ResNet50(nn.Module):
         for param in self.network.fc.parameters():
             param.require_grad = True
 
-    def train_model(self, dataloaders, device, optimizer, criterion, num_epochs):
+    def train_model(self, dataloaders, device, optimizer, loss_func, num_epochs):
         torch.cuda.empty_cache()
 
         since = time.time()
@@ -65,7 +65,7 @@ class ResNet50(nn.Module):
 
                     _, preds = torch.max(outputs, 1)
                     # labels = labels.to(torch.float32)
-                    loss = criterion(outputs, labels)
+                    loss = loss_func(outputs, labels)
 
                     if phase == 'train':
                         optimizer.zero_grad()

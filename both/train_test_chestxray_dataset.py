@@ -41,15 +41,15 @@ class_weights = torch.FloatTensor([w0, w1]).to(device)
 print("class_weights: ", class_weights)
 
 
-#criterion = nn.BCELoss()
-# criterion = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.9,0.3]).to(device))
-criterion = nn.CrossEntropyLoss(weight=class_weights)
+#loss_func = nn.BCELoss()
+# loss_func = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.9,0.3]).to(device))
+loss_func = nn.CrossEntropyLoss(weight=class_weights)
 optimiser = optim.Adam(model.parameters(),lr=0.0001)
 #optimiser = optim.SGD(model.parameters(),lr=0.001,momentum=0.9)
 num_epochs = 10
 
 
-model = model.train_model(dataloaders,device,optimiser,criterion,num_epochs)
+model = model.train_model(dataloaders,device,optimiser,loss_func,num_epochs)
 
 weight_dir = os.path.join('..','weights','train_test_chestxray_dataset.hdf5')
 torch.save(model.state_dict(), weight_dir)
