@@ -14,16 +14,12 @@ import torch.optim as optim
 import torchvision
 import matplotlib.pyplot as plt
 import hydra
-
-import yaml
 import copy
 
 
 
 CUDA_LAUNCH_BLOCKING = 1
 
-with open('../config.yaml', 'r') as f:
-    params = yaml.safe_load(f)
 
 # set device
 device = get_default_device()
