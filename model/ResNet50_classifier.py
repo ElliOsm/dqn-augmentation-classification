@@ -55,10 +55,9 @@ class ResNet50(nn.Module):
                 for inputs, labels in dataloaders[phase]:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
-                    # print(labels)
+
 
                     outputs = self(inputs)
-                    # print(outputs)
 
                     probs = nn.Softmax(dim=1)
                     outputs = probs(outputs)
@@ -120,7 +119,12 @@ class ResNet50(nn.Module):
             100. * correct / total, correct, total))
         # print("Confidense score",counter, "/", all)
 
+    # https://discuss.pytorch.org/t/how-can-l-use-the-pre-trained-resnet-to-extract-feautres-from-my-own-dataset/9008/2
     def extract_features(self, image):
-        self.eval()
-        features = self(image)
+        model = self.network
+        modules = list(model.children())[:-1]
+        resnet50 = nn.Sequential(*modules)
+        for p in resnet50.parameters():
+            p.requires_grad = False
+        features = resnet50(image)
         return features
