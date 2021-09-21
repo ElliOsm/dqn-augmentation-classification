@@ -7,23 +7,7 @@ from torchvision import transforms
 
 
 class DQN(nn.Module):
-    #
-    # def __init__(self, input_shape, action_shape=3):
-    #     super().__init__()
-    #
-    #     self.fc1 = nn.Linear(input_shape, 64)
-    #     self.fc2 = nn.Linear(64, 128)
-    #     self.out = nn.Linear(128, action_shape)
-    #
-    # def forward(self, x):
-    #     x = x.to("cuda")
-    #     x = self.fc1(x)
-    #     x = F.relu(x)
-    #     x = self.fc2(x)
-    #     x = F.relu(x)
-    #     action_prob = self.out(x)
-    #     return action_prob
-
+    #https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
     def __init__(self, h=224, w=224, outputs=3):
         super(DQN, self).__init__()
         self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
@@ -51,3 +35,10 @@ class DQN(nn.Module):
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
         return self.head(x.view(x.size(0), -1))
+
+    def test(self,input):
+        outputs = self(input)
+        probs = nn.Softmax(dim=1)
+        outputs = probs(outputs)
+        _, preds = torch.max(outputs, 1)
+        return preds

@@ -28,7 +28,6 @@ class DQNAgent():
 
         self.q_eval_net = DQN().to("cuda")
         self.target_net = DQN().to("cuda")
-
         self.target_net.load_state_dict(self.q_eval_net.state_dict())
         self.target_net.eval()
 
@@ -118,20 +117,20 @@ class DQNAgent():
         else:
             return 1
 
-    def get_next_state(self, state):
-        if state == 0:
-            return 1
-        elif state == 1:
-            return - 1
-        else:
-            return 0
+    # def get_next_state(self, state):
+    #     if state == 0:
+    #         return 1
+    #     elif state == 1:
+    #         return - 1
+    #     else:
+    #         return 0
 
-    def is_done(self, state):
-        if state == -1:
-            state = 0
-            return True , state
-        else:
-            return False , state
+    # def is_done(self, state):
+    #     if state == -1:
+    #         state = 0
+    #         return True, state
+    #     else:
+    #         return False, state
 
     def get_reward(self, m_before, m_after):
         difference = (m_after - m_before).float()
@@ -152,11 +151,9 @@ class DQNAgent():
         action_num = action_num.pop(0)
         reward = reward.pop(0)
         next_state = next_state.pop(0)
-        done = done.pop(0)
+        # done = done.pop(0)
 
-        action = self.apply_action(action_num, state)
-
-        q_eval = self.q_eval_net(state).gather(1, action)
+        q_eval = self.q_eval_net.test(state)
         q_next = self.target_net(next_state).detach()
         q_target = reward + self.gamma * q_next.max(1)[0].view(self.batch_size, 1)
         loss = self.loss_func(q_eval, q_target)
@@ -164,6 +161,10 @@ class DQNAgent():
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+    def train(self, dataloaders):
+        if len(self.buffer) < self.batch_size:
+            return
 
     def get_features(self, features):
         return features.std()
@@ -178,9 +179,13 @@ class DQNAgent():
             features_after = model.extract_features(image_after.to("cuda"))
             m_after = self.get_features(features_after)
             reward = self.get_reward(m_before, m_after)
-            state = self.get_state(reward)
-            next_state = self.get_next_state(state)
-            done, next_state = self.is_done(next_state)
-
+            state_num = self.get_state(reward)
+            # if state_num == 0:
+            state = image
+            next_state = image_after
+            # else:
+            #     state = image_after
+            #     next_state = image
+            # done, next_state = self.is_done(next_state)
+            self.buffer.push(state, action_num, reward, next_state)
             self.training()
-            self.buffer.push(state, action_num, reward, next_state, done)
