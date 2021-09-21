@@ -126,7 +126,6 @@ class qlearning:
         print("features",features)
         m_before = self.get_features(features)
         print(m_before)
-        exit()
         for e in range(self.episodes):
             action_num = self.select_random_action()
             image_after = self.apply_action(action_num, image)

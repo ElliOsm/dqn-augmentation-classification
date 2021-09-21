@@ -45,3 +45,5 @@ print(reward)
 print(next_state)
 print(done)
 
+print(agent.target_net.test(image))
+
