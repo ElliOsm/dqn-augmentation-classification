@@ -21,7 +21,7 @@ class DQNAgent():
         self.action_space = len(self.actions)
 
         self.learning_rate = 0.4
-        self.gamma = 0.3
+        self.discount = 0.3
         self.episodes = 30
         self.exploration = 1
         self.exploration_threshold = 0.1
@@ -155,7 +155,7 @@ class DQNAgent():
 
         q_eval = self.q_eval_net.test(state)
         q_next = self.target_net(next_state).detach()
-        q_target = reward + self.gamma * q_next.max(1)[0].view(self.batch_size, 1)
+        q_target = reward + self.discount * q_next.max(1)[0].view(self.batch_size, 1)
         loss = self.loss_func(q_eval, q_target)
 
         self.optimizer.zero_grad()

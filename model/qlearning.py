@@ -114,7 +114,7 @@ class qlearning:
             return 1
 
     def update_QTable(self, state, action_num, reward):
-        # Q[state, action] = Q[state, action] + lr * (reward + gamma * np.max(Q[new_state, :]) — Q[state, action])
+        # Q[state, action] = Q[state, action] + lr * (reward + discount * np.max(Q[new_state, :]) — Q[state, action])
         self.qTable[state, action_num] = self.qTable[state, action_num] + self.learning_rate * (
                 reward + self.discount_factor * max(self.qTable[state]) - self.qTable[state, action_num])
 
