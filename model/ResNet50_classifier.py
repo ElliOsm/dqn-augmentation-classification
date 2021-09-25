@@ -128,3 +128,7 @@ class ResNet50(nn.Module):
             p.requires_grad = False
         features = resnet50(image)
         return features
+
+    def extract_propabilities(self, image):
+        outputs = self(image)
+        return outputs

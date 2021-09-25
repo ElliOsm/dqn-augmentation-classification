@@ -56,7 +56,8 @@ for inputs, labels in dataloaders['test']:
     predicted_label_before = model(inputs)
     _, preds = torch.max(predicted_label_before, dim=1)
     if (preds != labels):
-        agent.find_best_action(inputs, model)
+        # agent.find_best_action(inputs, model)
+        agent.find_best_action_prob(inputs, model)
         action = agent.choose_final_action()
         image_after = agent.apply_action(action, inputs)
         

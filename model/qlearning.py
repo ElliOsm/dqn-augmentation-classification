@@ -121,6 +121,40 @@ class qlearning:
     def get_features(self, features):
         return features.std()
 
+    #https://stackoverflow.com/questions/57727372/how-do-i-get-the-value-of-a-tensor-in-pytorch
+    def get_difference(self, prob):
+        prob_array = prob.cpu().detach().numpy()
+        prob_array_copy = prob_array.copy()
+        prob0 = prob_array_copy[0][0]
+        prob1 = prob_array_copy[0][1]
+        return abs((prob0) - (prob1))
+
+    def find_best_action_prob(self, image, model):
+        probs = model.extract_propabilities(image).to("cuda")
+        print("probs",probs)
+        m_before = self.get_difference(probs)
+        print(m_before)
+        exit()
+        for e in range(self.episodes):
+            action_num = self.select_random_action()
+            image_after = self.apply_action(action_num, image)
+            probs_after = model.extract_features(image_after.to("cuda"))
+            m_after = self.get_features(probs_after)
+            reward = self.get_reward(m_before, m_after)
+            state = self.get_state(reward)
+            # print("------------------------------------")
+            # print("Repeat: ", e)
+            # print("State: ", state)
+            # print("Action: ", action_num)
+            # print("Reward: ", reward)
+            # print("------------------------------------")
+            self.update_QTable(state, action_num, reward)
+        print("*************************************")
+        print("Q-table")
+        print(self.qTable)
+        print("*************************************")
+
+
     def find_best_action(self, image, model):
         features = model.extract_features(image)
         print("features",features)
