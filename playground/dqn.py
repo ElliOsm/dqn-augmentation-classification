@@ -57,7 +57,7 @@ class DQNAgent():
 
         return image
 
-    # equalize image
+    # adjust_brightness
     def action2(self, image):
         image = np.squeeze(image)
 

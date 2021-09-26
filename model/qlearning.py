@@ -134,7 +134,6 @@ class qlearning:
         print("probs",probs)
         m_before = self.get_difference(probs)
         print(m_before)
-        exit()
         for e in range(self.episodes):
             action_num = self.select_random_action()
             image_after = self.apply_action(action_num, image)
@@ -149,10 +148,13 @@ class qlearning:
             # print("Reward: ", reward)
             # print("------------------------------------")
             self.update_QTable(state, action_num, reward)
-        print("*************************************")
-        print("Q-table")
-        print(self.qTable)
-        print("*************************************")
+        # print("*************************************")
+        # print("Q-table")
+        # print(self.qTable)
+        # print("*************************************")        # print("*************************************")
+        # print("Q-table")
+        # print(self.qTable)
+        # print("*************************************")
 
 
     def find_best_action(self, image, model):
