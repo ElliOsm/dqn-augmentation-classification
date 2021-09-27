@@ -1,2 +1,2 @@
-# Xray pneumonia detection using DRQ and transfer learning 
+# Xray pneumonia detection using DQN and transfer learning 
 -pytorch
