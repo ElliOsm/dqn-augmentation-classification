@@ -24,7 +24,7 @@ class DQNAgent():
         self.discount = 0.3
         self.episodes = 30
         self.exploration = 1
-        self.exploration_threshold = 0.1
+        self.exploration_min = 0.1
 
         self.q_eval_net = DQN().to("cuda")
         self.target_net = DQN().to("cuda")
@@ -91,11 +91,13 @@ class DQNAgent():
         return image
 
     def select_action(self, image):
+        #define epsilon
         if self.steps_done < 10:
             epsilon = self.exploration
         else:
-            epsilon = self.exploration_threshold
+            epsilon = self.exploration_min
         self.steps_done += 1
+
         # https://stackoverflow.com/questions/33359740/random-number-between-0-and-1-in-python
         if np.random.uniform(0, 1) < epsilon:
             action_num = random.randint(0, 2)
@@ -169,7 +171,15 @@ class DQNAgent():
     def get_features(self, features):
         return features.std()
 
-    def predict(self, model, image):
+    # https://stackoverflow.com/questions/57727372/how-do-i-get-the-value-of-a-tensor-in-pytorch
+    def get_difference(self, prob):
+        prob_array = prob.cpu().detach().numpy()
+        prob_array_copy = prob_array.copy()
+        prob0 = prob_array_copy[0][0]
+        prob1 = prob_array_copy[0][1]
+        return abs((prob0) - (prob1))
+
+    def predict_features(self, model, image):
         features = model.extract_features(image)
         m_before = self.get_features(features)
         state = 0
@@ -178,6 +188,26 @@ class DQNAgent():
             image_after = self.apply_action(action_num, image)
             features_after = model.extract_features(image_after.to("cuda"))
             m_after = self.get_features(features_after)
+            reward = self.get_reward(m_before, m_after)
+            state_num = self.get_state(reward)
+            # if state_num == 0:
+            state = image
+            next_state = image_after
+            # else:
+            #     state = image_after
+            #     next_state = image
+            # done, next_state = self.is_done(next_state)
+            self.buffer.push(state, action_num, reward, next_state)
+            self.training()
+
+    def predict_difference(self, image, model):
+        probs = model.extract_propabilities(image).to("cuda")
+        m_before = self.get_difference(probs)
+        for e in range(self.episodes):
+            action_num = self.select_random_action()
+            image_after = self.apply_action(action_num, image)
+            probs_after = model.extract_features(image_after.to("cuda"))
+            m_after = self.get_features(probs_after)
             reward = self.get_reward(m_before, m_after)
             state_num = self.get_state(reward)
             # if state_num == 0:
