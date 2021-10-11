@@ -16,8 +16,7 @@ class DataloaderSubsetDataset(Dataset):
         if self.transform:
             x = self.transform(x)
 
-        #if this line is commented it will rotate the image by 90 degrees
-        x = x.permute((0, 2, 1 ))
-
+        # if this line is commented it will rotate the image by 90 degrees
+        x = x.permute((0, 2, 1))
 
         return x, y

@@ -22,8 +22,6 @@ model.to(device)
 data_dir = os.path.join('..','data','train_i2a2_complete' ,'data')
 dataloaders = data_reader(data_dir)
 
-item = next(iter(dataloaders['test']))
-print(item[0].shape)
 
 # https://datascience.stackexchange.com/questions/48369/what-loss-function-to-use-for-imbalanced-classes-using-pytorch
 class_count = [1108, 2991]

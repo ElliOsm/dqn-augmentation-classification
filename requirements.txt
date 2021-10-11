@@ -1,10 +1,10 @@
-numpy==1.21.2
-torchvision==0.9.1+cu101
-pandas==1.2.2
-hydra_core==1.0.6
-matplotlib==3.4.3
 scipy==1.4.1
+torchvision==0.9.1+cu101
+numpy==1.21.2
+hydra_core==1.0.6
 torch==1.8.1+cu101
+matplotlib==3.4.3
+pandas==1.2.2
 hydra==2.5
 Pillow==8.3.2
 PyYAML==5.4.1

@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from thesis.data_prossesing.DataloaderSubsetDataset import DataloaderSubsetDataset
 
 
-
 def data_reader_train(dir):
     image_dataset = datasets.ImageFolder(dir)
 

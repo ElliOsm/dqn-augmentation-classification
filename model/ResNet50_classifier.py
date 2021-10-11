@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.models as models
 
+
 class ResNet50(nn.Module):
 
     def __init__(self):
@@ -53,7 +54,6 @@ class ResNet50(nn.Module):
                 for inputs, labels in dataloaders[phase]:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
-
 
                     outputs = self(inputs)
 

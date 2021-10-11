@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import shutil
 
+#comment in for i2a3-brasil-pneumonia-classification dataset
 #
 # data_csv = pd.read_csv('../data/train_i2a2_complete/train.csv')
 # image_dir = os.path.join('..','data','train_i2a2_complete', 'images')
@@ -26,6 +27,7 @@ import shutil
 #         shutil.copyfile(filepath, destination_test)
 #
 
+#comment in for Pneumonia-Chest-X-ray dataset
 data_dir = os.path.join('..', 'data', 'trainFolder', 'GTruth.csv')
 data_csv = pd.read_csv(data_dir)
 image_dir = os.path.join('..', 'data', 'trainFolder', 'images')

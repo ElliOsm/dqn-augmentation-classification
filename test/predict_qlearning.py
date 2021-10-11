@@ -6,7 +6,7 @@ from scipy.ndimage.interpolation import rotate
 
 from thesis.model.qlearning import qlearning
 from thesis.model.ResNet50_classifier import ResNet50
-from thesis.data_prossesing.data_pytorch import data_reader,print_image,get_default_device
+from thesis.data_prossesing.data_pytorch import data_reader, print_image, get_default_device
 import os
 import numpy as np
 import torch.nn as nn
@@ -16,10 +16,7 @@ import matplotlib.pyplot as plt
 import hydra
 import copy
 
-
-
 CUDA_LAUNCH_BLOCKING = 1
-
 
 # set device
 device = get_default_device()
@@ -41,8 +38,7 @@ model.to(device)
 weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil.hdf5')
 load_weight = model.load_state_dict(torch.load(weight_dir))
 
-
-#agent creation
+# agent creation
 agent = qlearning()
 correct_after = 0
 correct_before = 0
@@ -60,7 +56,7 @@ for inputs, labels in dataloaders['test']:
         agent.find_best_action_prob(inputs, model)
         action = agent.choose_final_action()
         image_after = agent.apply_action(action, inputs)
-        
+
         predicted_label_after = model(inputs)
         _, preds_after = torch.max(predicted_label_after, dim=1)
 
@@ -71,7 +67,7 @@ for inputs, labels in dataloaders['test']:
         correct_before = correct_before + 1
     total += labels.size(0)
 
-print("Correct without RL: ", correct_before,"/", total)
-print("Correct with RL: ", correct_after + correct_before , "/", total)
-print("Correct only RL: ", correct_after , "/", all_after)
-print("All Correct: ", correct_before + correct_after , "/", total)
+print("Correct without RL: ", correct_before, "/", total)
+print("Correct with RL: ", correct_after + correct_before, "/", total)
+print("Correct only RL: ", correct_after, "/", all_after)
+print("All Correct: ", correct_before + correct_after, "/", total)
