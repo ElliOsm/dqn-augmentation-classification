@@ -9,8 +9,6 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.models as models
 
-
-
 class ResNet50(nn.Module):
 
     def __init__(self):
