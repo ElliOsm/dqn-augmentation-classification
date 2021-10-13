@@ -113,11 +113,11 @@ class DQNAgent():
         image = action(image)
         return image
 
-    def get_state(self, reward):
-        if reward > 0:
-            return 0
-        else:
-            return 1
+    # def get_state(self, reward):
+    #     if reward > 0:
+    #         return 0
+    #     else:
+    #         return 1
 
     # def get_next_state(self, state):
     #     if state == 0:
@@ -189,7 +189,7 @@ class DQNAgent():
             features_after = model.extract_features(image_after.to("cuda"))
             m_after = self.get_features(features_after)
             reward = self.get_reward(m_before, m_after)
-            state_num = self.get_state(reward)
+            # state_num = self.get_state(reward)
             # if state_num == 0:
             state = image
             next_state = image_after
@@ -209,7 +209,7 @@ class DQNAgent():
             probs_after = model.extract_features(image_after.to("cuda"))
             m_after = self.get_features(probs_after)
             reward = self.get_reward(m_before, m_after)
-            state_num = self.get_state(reward)
+            # state_num = self.get_state(reward)
             # if state_num == 0:
             state = image
             next_state = image_after
