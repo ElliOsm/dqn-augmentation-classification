@@ -26,12 +26,12 @@ class DQNAgent():
         self.exploration = 1
         self.exploration_min = 0.1
 
-        self.q_eval_net = DQN().to("cuda")
+        self.policy_net = DQN().to("cuda")
         self.target_net = DQN().to("cuda")
-        self.target_net.load_state_dict(self.q_eval_net.state_dict())
+        self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
-        self.optimizer = torch.optim.Adam(self.q_eval_net.parameters(), lr=self.learning_rate)
+        self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=self.learning_rate)
         self.loss_func = nn.MSELoss()
 
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -102,7 +102,7 @@ class DQNAgent():
         if np.random.uniform(0, 1) < epsilon:
             action_num = random.randint(0, 2)
         else:
-            action_num = self.q_eval_net(image)
+            action_num = self.policy_net(image)
             _, action_num = torch.max(action_num, dim=1)
             action_num = action_num.item()
 
@@ -143,6 +143,11 @@ class DQNAgent():
         else:
             return -1
 
+
+    def get_Q_value(self,state):
+        q_values = self.policy_net(state)
+        return q_values
+
     def training(self):
         if len(self.buffer) < self.batch_size:
             return
@@ -155,7 +160,7 @@ class DQNAgent():
         next_state = next_state.pop(0)
         # done = done.pop(0)
 
-        q_eval = self.q_eval_net.test(state)
+        q_eval = self.policy_net.test(state)
         q_next = self.target_net(next_state).detach()
         q_target = reward + self.discount * q_next.max(1)[0].view(self.batch_size, 1)
         loss = self.loss_func(q_eval, q_target)
@@ -163,10 +168,12 @@ class DQNAgent():
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+    #
+    # # TODO:if buffer empty do nothing else learn
+    # def train(self, dataloaders):
+    #     if len(self.buffer) < self.batch_size:
+    #         return
 
-    def train(self, dataloaders):
-        if len(self.buffer) < self.batch_size:
-            return
 
     def get_features(self, features):
         return features.std()
