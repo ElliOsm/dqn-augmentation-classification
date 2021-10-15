@@ -143,8 +143,7 @@ class DQNAgent():
         else:
             return -1
 
-
-    def get_Q_value(self,state):
+    def get_Q_value(self, state):
         q_values = self.policy_net(state)
         return q_values
 
@@ -168,12 +167,18 @@ class DQNAgent():
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
     #
     # # TODO:if buffer empty do nothing else learn
     # def train(self, dataloaders):
     #     if len(self.buffer) < self.batch_size:
     #         return
 
+    def train(self, state, action, reward, new_state):
+        q_value = self.policy_net(state)
+        next_q_value = self.policy_net(new_state)
+
+        q_value[action] = reward + self.discount * np.amax(next_q_value)
 
     def get_features(self, features):
         return features.std()
