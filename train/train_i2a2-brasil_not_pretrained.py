@@ -15,8 +15,7 @@ device = get_default_device()
 print("Device:", device)
 
 # create Model
-model = ResNet50()
-model.freeze()
+model = ResNet50(pretrained=False)
 model.to(device)
 
 # load dataset
@@ -39,7 +38,6 @@ num_epochs = 10
 
 model = model.train_model(dataloaders, device, optimiser, loss_func, num_epochs)
 
-weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil.hdf5')
+weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil_not_pretrained.hdf5')
 torch.save(model.state_dict(), weight_dir)
 print("weights saved at: ", weight_dir)
-

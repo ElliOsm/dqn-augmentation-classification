@@ -20,6 +20,7 @@ model.to(device)
 
 # load dataset
 # data_dir = '../data/train_i2a2_complete/data'
+print("Dataset: CHESTXRAY")
 data_dir = os.path.join('..', 'data', 'trainFolder', 'data')
 dataloaders = data_reader(data_dir)
 
@@ -43,3 +44,5 @@ model = model.train_model(dataloaders, device, optimiser, loss_func, num_epochs)
 
 weight_dir = os.path.join('..', 'weights', 'train_chestxray_dataset.hdf5')
 torch.save(model.state_dict(), weight_dir)
+print("weights saved at: ", weight_dir)
+

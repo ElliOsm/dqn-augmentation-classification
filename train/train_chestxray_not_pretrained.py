@@ -14,19 +14,17 @@ CUDA_LAUNCH_BLOCKING = 1
 device = get_default_device()
 print("Device:", device)
 
-# create Model
-model = ResNet50()
-model.freeze()
+model = ResNet50(pretrained=False)
 model.to(device)
 
 # load dataset
-print("Dataset: TRAIN I2A2")
-data_dir = os.path.join('..','data','train_i2a2_complete' ,'data')
+print("Dataset: CHESTXRAY")
+data_dir = os.path.join('..', 'data', 'trainFolder', 'data')
 dataloaders = data_reader(data_dir)
 
 # https://datascience.stackexchange.com/questions/48369/what-loss-function-to-use-for-imbalanced-classes-using-pytorch
-# create class weights
-class_count = [1108, 2991]
+# class_count = [1108, 2991]
+class_count = [1583, 4273]
 w0 = (class_count[1]) / (class_count[0])
 w1 = (class_count[1]) / (class_count[1])
 
@@ -39,7 +37,7 @@ num_epochs = 10
 
 model = model.train_model(dataloaders, device, optimiser, loss_func, num_epochs)
 
-weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil.hdf5')
+weight_dir = os.path.join('..', 'weights', 'train_chestxray_dataset_not_pretrained.hdf5')
 torch.save(model.state_dict(), weight_dir)
 print("weights saved at: ", weight_dir)
 
