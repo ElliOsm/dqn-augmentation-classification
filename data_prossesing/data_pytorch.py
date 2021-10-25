@@ -3,7 +3,6 @@ import os
 import PIL.Image as Image
 import torch
 import torch.nn.functional as F
-import yaml
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 import numpy as np
@@ -85,15 +84,7 @@ def data_reader_test(dir):
 def data_reader(dir):
     image_dataset = datasets.ImageFolder(dir)
 
-    data_aug_transform = transforms.Compose([
-        transforms.Resize([224, 224]),
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        # converts all images to (0,1]
-        transforms.ToTensor(),
-        # transforms.Normalize([0.485, 0.456, 0.406],
-        #                      [0.229, 0.224, 0.225])
-    ])
+
     data_transform = transforms.Compose([
         transforms.Resize([224, 224]),
         # converts all images to (0,1]
@@ -147,17 +138,7 @@ def data_reader(dir):
 
 
 def data_reader_chestxray(dir):
-    # image_dataset = datasets.ImageFolder(dir)
 
-    data_aug_transform = transforms.Compose([
-        transforms.Resize([224, 224]),
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        # converts all images to (0,1]
-        transforms.ToTensor(),
-        # transforms.Normalize([0.485, 0.456, 0.406],
-        #                      [0.229, 0.224, 0.225])
-    ])
     data_transform = transforms.Compose([
         transforms.Resize([224, 224]),
         # converts all images to (0,1]
