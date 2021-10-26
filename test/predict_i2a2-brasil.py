@@ -27,6 +27,7 @@ dataloaders = data_reader(data_dir)
 
 weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil.hdf5')
 load_weight = model.load_state_dict(torch.load(weight_dir))
+print("weights loaded successfully from: ", weight_dir)
 
 
 prediction = model.test_model(dataloaders['test'], device)
