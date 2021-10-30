@@ -12,12 +12,18 @@ import torchvision.models as models
 
 class ResNet50(nn.Module):
 
-    def __init__(self):
+    def __init__(self, pretrained = True):
         super().__init__()
-        self.network = torchvision.models.resnet50(pretrained=True)
+        if pretrained:
+            self.network = torchvision.models.resnet50(pretrained=True)
+            print("ResNet status: PRETRAINED")
+        else:
+            self.network = torchvision.models.resnet50(pretrained=False)
+            print("ResNet status: NOT PRETRAINED")
 
         num_in_features = self.network.fc.in_features
         self.network.fc = nn.Linear(num_in_features, 2)
+        self.threshold = 0.8
 
     def forward(self, x):
         return self.network(x)
