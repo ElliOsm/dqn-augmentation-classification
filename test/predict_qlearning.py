@@ -36,7 +36,7 @@ model.to(device)
 
 # weight load
 weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil.hdf5')
-load_weight = model.load_state_dict(torch.load(weight_dir))
+model.load_state_dict(torch.load(weight_dir))
 
 # agent creation
 agent = qlearning()

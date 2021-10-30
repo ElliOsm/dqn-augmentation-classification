@@ -20,7 +20,7 @@ data_dir = os.path.join('..','data','trainFolder' ,'data')
 dataloaders = data_reader(data_dir)
 
 weight_dir = os.path.join('..','weights','train_chestxray_dataset.hdf5')
-load_weight = model.load_state_dict(torch.load(weight_dir))
+model.load_state_dict(torch.load(weight_dir))
 print("weights loaded successfully from: ", weight_dir)
 
 

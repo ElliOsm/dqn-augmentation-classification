@@ -26,7 +26,7 @@ data_dir = os.path.join('..','data','train_i2a2_complete' ,'data')
 dataloaders = data_reader(data_dir)
 
 weight_dir = os.path.join('..', 'weights', 'test_i2a2-brasil_not_pretrained.hdf5')
-load_weight = model.load_state_dict(torch.load(weight_dir))
+model.load_state_dict(torch.load(weight_dir))
 print("weights loaded successfully from: ", weight_dir)
 
 
