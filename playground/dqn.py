@@ -9,10 +9,12 @@ from torchvision import transforms
 from thesis.playground.buffer import ReplayMemory
 from thesis.playground.dqn_architectuer import DQN
 
+from thesis.model.ResNet50_classifier import ResNet50
 
-class DQNAgent():
 
-    def __init__(self, batch_size):
+class DQNAgent:
+
+    def __init__(self, batch_size, dir=None):
         self.actions = {
             0: self.action1,
             1: self.action2,
@@ -39,6 +41,14 @@ class DQNAgent():
 
         self.batch_size = batch_size
         self.steps_done = 0
+
+        self.threshold = 0.80
+
+
+        self.classifier = ResNet50(pretrained=True)
+        if (dir is not None):
+            self.classifier.load_state_dict(torch.load(dir))
+            print("weights loaded successfully from: ", dir)
 
     # adjust_contrast
     def action1(self, image):
@@ -100,8 +110,10 @@ class DQNAgent():
 
         # https://stackoverflow.com/questions/33359740/random-number-between-0-and-1-in-python
         if np.random.uniform(0, 1) < epsilon:
+            print("random")
             action_num = random.randint(0, 2)
         else:
+            print("policy net")
             action_num = self.policy_net(image)
             _, action_num = torch.max(action_num, dim=1)
             action_num = action_num.item()
@@ -180,8 +192,8 @@ class DQNAgent():
 
         q_value[action] = reward + self.discount * np.amax(next_q_value)
 
-    def get_features(self, features):
-        return features.std()
+    # def get_features(self, features):
+    #     return features.std()
 
     # https://stackoverflow.com/questions/57727372/how-do-i-get-the-value-of-a-tensor-in-pytorch
     def get_difference(self, prob):
@@ -191,26 +203,26 @@ class DQNAgent():
         prob1 = prob_array_copy[0][1]
         return abs((prob0) - (prob1))
 
-    def predict_features(self, model, image):
-        features = model.extract_features(image)
-        m_before = self.get_features(features)
-        state = 0
-        for e in range(self.episodes):
-            action_num = self.select_action(state)
-            image_after = self.apply_action(action_num, image)
-            features_after = model.extract_features(image_after.to("cuda"))
-            m_after = self.get_features(features_after)
-            reward = self.get_reward(m_before, m_after)
-            # state_num = self.get_state(reward)
-            # if state_num == 0:
-            state = image
-            next_state = image_after
-            # else:
-            #     state = image_after
-            #     next_state = image
-            # done, next_state = self.is_done(next_state)
-            self.buffer.push(state, action_num, reward, next_state)
-            self.training()
+    # def predict_features(self, model, image):
+    #     features = model.extract_features(image)
+    #     m_before = self.get_features(features)
+    #     state = 0
+    #     for e in range(self.episodes):
+    #         action_num = self.select_action(state)
+    #         image_after = self.apply_action(action_num, image)
+    #         features_after = model.extract_features(image_after.to("cuda"))
+    #         m_after = self.get_features(features_after)
+    #         reward = self.get_reward(m_before, m_after)
+    #         # state_num = self.get_state(reward)
+    #         # if state_num == 0:
+    #         state = image
+    #         next_state = image_after
+    #         # else:
+    #         #     state = image_after
+    #         #     next_state = image
+    #         # done, next_state = self.is_done(next_state)
+    #         self.buffer.push(state, action_num, reward, next_state)
+    #         self.training()
 
     def predict_difference(self, image, model):
         probs = model.extract_propabilities(image).to("cuda")
