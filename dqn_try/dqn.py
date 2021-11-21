@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 
-from thesis.playground.buffer import ReplayMemory
-from thesis.playground.dqn_architectuer import DQN
+from thesis.dqn_try.buffer import ReplayMemory
+from thesis.dqn_try.dqn_architectuer import DQN
 
 from thesis.model.ResNet50_classifier import ResNet50
 

@@ -4,10 +4,10 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from thesis.playground.dqn import DQNAgent
+from thesis.dqn_try.dqn import DQNAgent
 
 from thesis.data_prossesing.data_pytorch import data_reader, get_default_device
-from thesis.playground.buffer import ReplayMemory
+from thesis.dqn_try.buffer import ReplayMemory
 
 # set device
 device = get_default_device()
