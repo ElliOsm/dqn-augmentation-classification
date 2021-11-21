@@ -101,7 +101,7 @@ class DQNAgent:
         return image
 
     def select_action(self, image):
-        #define epsilon
+        # define epsilon
         if self.steps_done < 10:
             epsilon = self.exploration
         else:
@@ -125,30 +125,10 @@ class DQNAgent:
         image = action(image)
         return image
 
-    # def get_state(self, reward):
-    #     if reward > 0:
-    #         return 0
-    #     else:
-    #         return 1
-
-    # def get_next_state(self, state):
-    #     if state == 0:
-    #         return 1
-    #     elif state == 1:
-    #         return - 1
-    #     else:
-    #         return 0
-
-    # def is_done(self, state):
-    #     if state == -1:
-    #         state = 0
-    #         return True, state
-    #     else:
-    #         return False, state
-
-    def get_reward(self, m_before, m_after):
-        difference = (m_after - m_before).float()
-        if difference > 0:
+    # TODO: compare with target.
+    def get_reward(self, m_after, target_label):
+        difference = (target_label - m_after).float()
+        if difference < self.threshold:
             return 1
         elif difference == 0:
             return 0
@@ -180,13 +160,17 @@ class DQNAgent:
         loss.backward()
         self.optimizer.step()
 
-    #
-    # # TODO:if buffer empty do nothing else learn
-    # def train(self, dataloaders):
-    #     if len(self.buffer) < self.batch_size:
-    #         return
+    def train(self, image, reward):
 
-    def train(self, state, action, reward, new_state):
+        q_value = self.policy_net(image)
+        image_next = image
+        action_num = self.select_action(image_next)
+        image_next = self.apply_action(action_num, image_next)
+        next_q_value = self.policy_net(image_next)
+
+        q_value[action_num] = reward + self.discount * np.amax(next_q_value)
+
+    def train_model(self, state, action, reward, new_state):
         q_value = self.policy_net(state)
         next_q_value = self.policy_net(new_state)
 
@@ -224,7 +208,7 @@ class DQNAgent:
     #         self.buffer.push(state, action_num, reward, next_state)
     #         self.training()
 
-    def predict_difference(self, image, model):
+    def predict_difference(self, image, model, target_label):
         probs = model.extract_propabilities(image).to("cuda")
         m_before = self.get_difference(probs)
         for e in range(self.episodes):
@@ -232,7 +216,8 @@ class DQNAgent:
             image_after = self.apply_action(action_num, image)
             probs_after = model.extract_features(image_after.to("cuda"))
             m_after = self.get_features(probs_after)
-            reward = self.get_reward(m_before, m_after)
+            print(m_after)
+            reward = self.get_reward(m_after, target_label)
             # state_num = self.get_state(reward)
             # if state_num == 0:
             state = image
@@ -241,5 +226,4 @@ class DQNAgent:
             #     state = image_after
             #     next_state = image
             # done, next_state = self.is_done(next_state)
-            self.buffer.push(state, action_num, reward, next_state)
             self.training()
