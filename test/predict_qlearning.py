@@ -13,7 +13,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 import matplotlib.pyplot as plt
-import hydra
 import copy
 
 CUDA_LAUNCH_BLOCKING = 1

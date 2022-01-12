@@ -170,11 +170,18 @@ class DQNAgent:
 
         q_value[action_num] = reward + self.discount * np.amax(next_q_value)
 
-    def train_model(self, state, action, reward, new_state):
-        q_value = self.policy_net(state)
-        next_q_value = self.policy_net(new_state)
+    def train_model(self,image,action,reward,new_image):
+        old_q_values = self.get_Q_value(image)
+        new_q_values = self.get_Q_value(new_image)
 
-        q_value[action] = reward + self.discount * np.amax(next_q_value)
+        old_q_values[action] = reward + self.discount * np.amax(new_q_values)
+
+        training_data = [[image]]
+        target_output = [old_q_values]
+
+        training_data = {self.model_input: training_data, self.target_output: target_output}
+
+        self.policy_net(self.optimizer)
 
     # def get_features(self, features):
     #     return features.std()
