@@ -19,7 +19,10 @@ class qlearning:
         self.state = [0, 1]
         self.learning_rate = 0.4
         self.discount_factor = 0.3
-        self.episodes = 50
+        self.episodes = 5
+        self.exploration = 1
+        self.exploration_min = 0.1
+        self.steps_done = 0
 
     #
     # # horizontal flip
@@ -93,6 +96,29 @@ class qlearning:
     def select_random_action(self):
         return random.randint(0, 2)
 
+    def select_action(self, image):
+        # define epsilon
+        if self.steps_done < 10:
+            epsilon = self.exploration
+        else:
+            epsilon = self.exploration_min
+        self.steps_done += 1
+
+        # https://stackoverflow.com/questions/33359740/random-number-between-0-and-1-in-python
+        if np.random.uniform(0, 1) < epsilon:
+            print("random")
+            action_num = random.randint(0, 2)
+        else:
+            print("qtable")
+            max_value = np.amax(self.qTable.all(axis=1))
+            for i in self.qTable[0,]:
+                if self.qTable[0,i] == max_value:
+                    action_num = i
+
+
+
+        return action_num
+
     def apply_action(self, action_num, image):
         action = self.actions[action_num]
         image = action(image)
@@ -121,7 +147,7 @@ class qlearning:
     def get_features(self, features):
         return features.std()
 
-    #https://stackoverflow.com/questions/57727372/how-do-i-get-the-value-of-a-tensor-in-pytorch
+    # https://stackoverflow.com/questions/57727372/how-do-i-get-the-value-of-a-tensor-in-pytorch
     def get_difference(self, prob):
         prob_array = prob.cpu().detach().numpy()
         prob_array_copy = prob_array.copy()
@@ -131,7 +157,7 @@ class qlearning:
 
     def find_best_action_prob(self, image, model):
         probs = model.extract_propabilities(image).to("cuda")
-        print("probs",probs)
+        print("probs", probs)
         m_before = self.get_difference(probs)
         print(m_before)
         for e in range(self.episodes):
@@ -148,38 +174,37 @@ class qlearning:
             # print("Reward: ", reward)
             # print("------------------------------------")
             self.update_QTable(state, action_num, reward)
-        # print("*************************************")
-        # print("Q-table")
-        # print(self.qTable)
-        # print("*************************************")        # print("*************************************")
-        # print("Q-table")
-        # print(self.qTable)
-        # print("*************************************")
-
-
-    def find_best_action(self, image, model):
-        features = model.extract_features(image)
-        print("features",features)
-        m_before = self.get_features(features)
-        print(m_before)
-        for e in range(self.episodes):
-            action_num = self.select_random_action()
-            image_after = self.apply_action(action_num, image)
-            features_after = model.extract_features(image_after.to("cuda"))
-            m_after = self.get_features(features_after)
-            reward = self.get_reward(m_before, m_after)
-            state = self.get_state(reward)
-            # print("------------------------------------")
-            # print("Repeat: ", e)
-            # print("State: ", state)
-            # print("Action: ", action_num)
-            # print("Reward: ", reward)
-            # print("------------------------------------")
-            self.update_QTable(state, action_num, reward)
         print("*************************************")
         print("Q-table")
         print(self.qTable)
+        print("*************************************")        # print("*************************************")
+        print("Q-table")
+        print(self.qTable)
         print("*************************************")
+
+    # def find_best_action(self, image, model):
+    #     features = model.extract_features(image)
+    #     print("features", features)
+    #     m_before = self.get_features(features)
+    #     print(m_before)
+    #     for e in range(self.episodes):
+    #         action_num = self.select_random_action()
+    #         image_after = self.apply_action(action_num, image)
+    #         features_after = model.extract_features(image_after.to("cuda"))
+    #         m_after = self.get_features(features_after)
+    #         reward = self.get_reward(m_before, m_after)
+    #         state = self.get_state(reward)
+    #         # print("------------------------------------")
+    #         # print("Repeat: ", e)
+    #         # print("State: ", state)
+    #         # print("Action: ", action_num)
+    #         # print("Reward: ", reward)
+    #         # print("------------------------------------")
+    #         self.update_QTable(state, action_num, reward)
+    #     print("*************************************")
+    #     print("Q-table")
+    #     print(self.qTable)
+    #     print("*************************************")
 
     def choose_final_action(self):
         return np.where(self.qTable == np.amax(self.qTable))[1][0]

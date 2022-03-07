@@ -1,6 +1,4 @@
 import random
-
-import math
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,7 +6,6 @@ from torchvision import transforms
 
 from thesis.dqn_try.buffer import ReplayMemory
 from thesis.dqn_try.dqn_architectuer import DQN
-
 from thesis.model.ResNet50_classifier import ResNet50
 
 
@@ -44,9 +41,8 @@ class DQNAgent:
 
         self.threshold = 0.80
 
-
         self.classifier = ResNet50(pretrained=True)
-        if (dir is not None):
+        if dir is not None:
             self.classifier.load_state_dict(torch.load(dir))
             print("weights loaded successfully from: ", dir)
 
@@ -125,7 +121,6 @@ class DQNAgent:
         image = action(image)
         return image
 
-    # TODO: compare with target.
     def get_reward(self, m_after, target_label):
         difference = (target_label - m_after).float()
         if difference < self.threshold:
@@ -135,42 +130,51 @@ class DQNAgent:
         else:
             return -1
 
+    def get_reward_according_to_label(self, m_before, m_after, target):
+        difference_before = (m_before - target).float()
+        difference_after = (m_after - target).float()
+        if difference_after > difference_before:
+            return 1
+        elif difference_after == difference_before:
+            return 0
+        else:
+            return -1
+
     def get_Q_value(self, state):
         q_values = self.policy_net(state)
         return q_values
 
-    def training(self):
-        if len(self.buffer) < self.batch_size:
-            return
+    # def training(self):
+    #     if len(self.buffer) < self.batch_size:
+    #         return
+    #
+    #     state, action_num, reward, next_state, done = self.buffer.sample(self.batch_size)
+    #
+    #     state = state.pop(0).to(self.device)
+    #     action_num = action_num.pop(0)
+    #     reward = reward.pop(0)
+    #     next_state = next_state.pop(0)
+    #     # done = done.pop(0)
+    #
+    #     q_eval = self.policy_net.test(state)
+    #     q_next = self.target_net(next_state).detach()
+    #     q_target = reward + self.discount * q_next.max(1)[0].view(self.batch_size, 1)
+    #     loss = self.loss_func(q_eval, q_target)
+    #
+    #     self.optimizer.zero_grad()
+    #     loss.backward()
+    #     self.optimizer.step()
 
-        state, action_num, reward, next_state, done = self.buffer.sample(self.batch_size)
+    # def train(self, image, reward):
+    #     q_value = self.policy_net(image)
+    #     image_next = image
+    #     action_num = self.select_action(image_next)
+    #     image_next = self.apply_action(action_num, image_next)
+    #     next_q_value = self.policy_net(image_next)
+    #
+    #     q_value[action_num] = reward + self.discount * np.amax(next_q_value)
 
-        state = state.pop(0).to(self.device)
-        action_num = action_num.pop(0)
-        reward = reward.pop(0)
-        next_state = next_state.pop(0)
-        # done = done.pop(0)
-
-        q_eval = self.policy_net.test(state)
-        q_next = self.target_net(next_state).detach()
-        q_target = reward + self.discount * q_next.max(1)[0].view(self.batch_size, 1)
-        loss = self.loss_func(q_eval, q_target)
-
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-    def train(self, image, reward):
-
-        q_value = self.policy_net(image)
-        image_next = image
-        action_num = self.select_action(image_next)
-        image_next = self.apply_action(action_num, image_next)
-        next_q_value = self.policy_net(image_next)
-
-        q_value[action_num] = reward + self.discount * np.amax(next_q_value)
-
-    def train_model(self,image,action,reward,new_image):
+    def train_model(self, image, action, reward, new_image):
         old_q_values = self.get_Q_value(image)
         new_q_values = self.get_Q_value(new_image)
 
