@@ -130,7 +130,7 @@ class DQNAgent:
         else:
             return -1
 
-    def get_reward_according_to_label(self, m_before, m_after, target):
+    def get_reward_according_to_label(self,m_before, m_after, target):
         difference_before = (m_before - target).float()
         difference_after = (m_after - target).float()
         if difference_after > difference_before:
@@ -174,18 +174,74 @@ class DQNAgent:
     #
     #     q_value[action_num] = reward + self.discount * np.amax(next_q_value)
 
-    def train_model(self, image, action, reward, new_image):
+    # def train_model(self, image, action, reward, new_image):
+    #     old_q_values = self.get_Q_value(image)
+    #     new_q_values = self.get_Q_value(new_image)
+    #
+    #     old_q_values[action] = reward + self.discount * np.amax(new_q_values)
+    #
+    #     training_data = [[image]]
+    #     target_output = [old_q_values]
+    #
+    #     training_data = {self.model_input: training_data, self.target_output: target_output}
+    #
+    #     self.policy_net(self.optimizer)
+
+
+    def train_model(self,image, action, reward):
         old_q_values = self.get_Q_value(image)
+        new_image = self.apply_action(action,image)
         new_q_values = self.get_Q_value(new_image)
+        expected_values = reward + self.discount * np.amax(new_q_values)
 
-        old_q_values[action] = reward + self.discount * np.amax(new_q_values)
+        # Compute Huber loss
+        criterion = nn.SmoothL1Loss()
+        loss = criterion(new_q_values, expected_values)
 
-        training_data = [[image]]
-        target_output = [old_q_values]
+        # Optimize the model
+        self.optimizer.zero_grad()
+        loss.backward()
+        for param in self.policy_net.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()
 
-        training_data = {self.model_input: training_data, self.target_output: target_output}
-
-        self.policy_net(self.optimizer)
+    # def train(self,image):
+    #     for e in range(self.episodes):
+    #         state = image
+    #         for t in count():
+    #             action = self.select_action(image)
+    #             image_mod = self.apply_action(action,image)
+    #             self.target_net
+    #
+    #             reward = self.get_reward_according_to_label()
+    #             _, reward, done, _ =
+    #             reward = torch.tensor([reward], device=device)
+    #
+    #             # Observe new state
+    #             last_screen = current_screen
+    #             current_screen = get_screen()
+    #             if not done:
+    #                 next_state = current_screen - last_screen
+    #             else:
+    #                 next_state = None
+    #
+    #             # Store the transition in memory
+    #             memory.push(state, action, next_state, reward)
+    #
+    #             # Move to the next state
+    #             state = next_state
+    #
+    #             # Perform one step of the optimization (on the policy network)
+    #             optimize_model()
+    #             if done:
+    #                 episode_durations.append(t + 1)
+    #                 plot_durations()
+    #                 break
+    #         # Update the target network, copying all weights and biases in DQN
+    #         if i_episode % TARGET_UPDATE == 0:
+    #             target_net.load_state_dict(policy_net.state_dict())
+    #
+    #     print('Complete')
 
     # def get_features(self, features):
     #     return features.std()
@@ -198,26 +254,6 @@ class DQNAgent:
         prob1 = prob_array_copy[0][1]
         return abs((prob0) - (prob1))
 
-    # def predict_features(self, model, image):
-    #     features = model.extract_features(image)
-    #     m_before = self.get_features(features)
-    #     state = 0
-    #     for e in range(self.episodes):
-    #         action_num = self.select_action(state)
-    #         image_after = self.apply_action(action_num, image)
-    #         features_after = model.extract_features(image_after.to("cuda"))
-    #         m_after = self.get_features(features_after)
-    #         reward = self.get_reward(m_before, m_after)
-    #         # state_num = self.get_state(reward)
-    #         # if state_num == 0:
-    #         state = image
-    #         next_state = image_after
-    #         # else:
-    #         #     state = image_after
-    #         #     next_state = image
-    #         # done, next_state = self.is_done(next_state)
-    #         self.buffer.push(state, action_num, reward, next_state)
-    #         self.training()
 
     def predict_difference(self, image, model, target_label):
         probs = model.extract_propabilities(image).to("cuda")
