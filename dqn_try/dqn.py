@@ -196,7 +196,7 @@ class DQNAgent:
 
         # Compute Huber loss
         criterion = nn.SmoothL1Loss()
-        loss = criterion(new_q_values, expected_values)
+        loss = criterion(old_q_values, expected_values)
 
         # Optimize the model
         self.optimizer.zero_grad()
