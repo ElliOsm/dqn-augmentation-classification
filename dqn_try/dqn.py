@@ -199,49 +199,23 @@ class DQNAgent:
         loss = criterion(old_q_values, expected_values)
 
         # Optimize the model
-        self.optimizer.zero_grad()
+        self.policy_net.optimizer.zero_grad()
         loss.backward()
         for param in self.policy_net.parameters():
             param.grad.data.clamp_(-1, 1)
-        self.optimizer.step()
+        self.policy_net.optimizer.step()
 
-    # def train(self,image):
-    #     for e in range(self.episodes):
-    #         state = image
-    #         for t in count():
-    #             action = self.select_action(image)
-    #             image_mod = self.apply_action(action,image)
-    #             self.target_net
-    #
-    #             reward = self.get_reward_according_to_label()
-    #             _, reward, done, _ =
-    #             reward = torch.tensor([reward], device=device)
-    #
-    #             # Observe new state
-    #             last_screen = current_screen
-    #             current_screen = get_screen()
-    #             if not done:
-    #                 next_state = current_screen - last_screen
-    #             else:
-    #                 next_state = None
-    #
-    #             # Store the transition in memory
-    #             memory.push(state, action, next_state, reward)
-    #
-    #             # Move to the next state
-    #             state = next_state
-    #
-    #             # Perform one step of the optimization (on the policy network)
-    #             optimize_model()
-    #             if done:
-    #                 episode_durations.append(t + 1)
-    #                 plot_durations()
-    #                 break
-    #         # Update the target network, copying all weights and biases in DQN
-    #         if i_episode % TARGET_UPDATE == 0:
-    #             target_net.load_state_dict(policy_net.state_dict())
-    #
-    #     print('Complete')
+    def train_loop(self,image,label):
+        for e in range(self.episodes):
+            state = image
+            action = self.select_action(image)
+            new_state = self.apply_action(action,image)
+            metrics_before = self.target_net(state)
+            metrics_after = self.target_net(new_state)
+            reward = self.get_reward_according_to_label(metrics_before,metrics_after,label)
+            self.train_model(image,action,reward)
+            self.target_net.load_state_dict(self.policy_net.state_dict())
+        print('Complete')
 
     # def get_features(self, features):
     #     return features.std()
