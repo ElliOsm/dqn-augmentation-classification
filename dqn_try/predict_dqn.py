@@ -1,13 +1,6 @@
 import os
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-
 from thesis.dqn_try.dqn import DQNAgent
-
 from thesis.data_prossesing.data_pytorch import data_reader, get_default_device
-from thesis.dqn_try.buffer import ReplayMemory
 
 # set device
 device = get_default_device()
@@ -19,11 +12,16 @@ data_dir = os.path.join('..', 'data', 'trainFolder', 'data')
 dataloaders = data_reader(data_dir)
 data = next(iter(dataloaders['test']))
 image = data[0].to("cuda")
+label = data[1]
 agent = DQNAgent(batch_size=4)
 
-for e in range(20):
-    action = agent.select_action(image)
-    print(action)
+print("Label:")
+print(label.item())
+
+
+#for e in range(20):
+#    action = agent.select_action(image)
+#    print(action)
 
 # buffer = ReplayMemory(1000)
 #
