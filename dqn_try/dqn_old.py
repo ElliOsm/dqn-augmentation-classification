@@ -130,18 +130,62 @@ class DQNAgent:
         else:
             return -1
 
-    def get_reward_according_to_label(self, m_before,label_before, m_after,label_after, label_target):
-        if label_after == label_target:
+    def get_reward_according_to_label(self, m_before, m_after, target):
+        difference_before = (m_before - target).float()
+        difference_after = (m_after - target).float()
+        if difference_after > difference_before:
             return 1
-        elif label_before == label_target:
+        elif difference_after == difference_before:
             return 0
         else:
-            print(m_before)
-            exit()
+            return -1
 
     def get_Q_value(self, state):
         q_values = self.policy_net(state)
         return q_values
+
+    # def training(self):
+    #     if len(self.buffer) < self.batch_size:
+    #         return
+    #
+    #     state, action_num, reward, next_state, done = self.buffer.sample(self.batch_size)
+    #
+    #     state = state.pop(0).to(self.device)
+    #     action_num = action_num.pop(0)
+    #     reward = reward.pop(0)
+    #     next_state = next_state.pop(0)
+    #     # done = done.pop(0)
+    #
+    #     q_eval = self.policy_net.test(state)
+    #     q_next = self.target_net(next_state).detach()
+    #     q_target = reward + self.discount * q_next.max(1)[0].view(self.batch_size, 1)
+    #     loss = self.loss_func(q_eval, q_target)
+    #
+    #     self.optimizer.zero_grad()
+    #     loss.backward()
+    #     self.optimizer.step()
+
+    # def train(self, image, reward):
+    #     q_value = self.policy_net(image)
+    #     image_next = image
+    #     action_num = self.select_action(image_next)
+    #     image_next = self.apply_action(action_num, image_next)
+    #     next_q_value = self.policy_net(image_next)
+    #
+    #     q_value[action_num] = reward + self.discount * np.amax(next_q_value)
+
+    # def train_model(self, image, action, reward, new_image):
+    #     old_q_values = self.get_Q_value(image)
+    #     new_q_values = self.get_Q_value(new_image)
+    #
+    #     old_q_values[action] = reward + self.discount * np.amax(new_q_values)
+    #
+    #     training_data = [[image]]
+    #     target_output = [old_q_values]
+    #
+    #     training_data = {self.model_input: training_data, self.target_output: target_output}
+    #
+    #     self.policy_net(self.optimizer)
 
     def train_model(self, image, action, reward):
         old_q_values = self.get_Q_value(image)
@@ -160,6 +204,20 @@ class DQNAgent:
             param.grad.data.clamp_(-1, 1)
         self.policy_net.optimizer.step()
 
+    def train_loop(self, image, label):
+        for e in range(self.episodes):
+            state = image
+            action = self.select_action(image)
+            new_state = self.apply_action(action, image)
+            metrics_before = self.target_net(state)
+            metrics_after = self.target_net(new_state)
+            reward = self.get_reward_according_to_label(metrics_before, metrics_after, label)
+            self.train_model(image, action, reward)
+            self.target_net.load_state_dict(self.policy_net.state_dict())
+        print('Complete')
+
+    # def get_features(self, features):
+    #     return features.std()
 
     # https://stackoverflow.com/questions/57727372/how-do-i-get-the-value-of-a-tensor-in-pytorch
     def get_difference(self, prob):

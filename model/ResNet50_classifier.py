@@ -13,7 +13,7 @@ import torchvision.models as models
 # TODO: CONFIDENCE SCORE? !=0.50
 class ResNet50(nn.Module):
 
-    def __init__(self, pretrained = True):
+    def __init__(self, pretrained=True):
         super().__init__()
         if pretrained:
             self.network = torchvision.models.resnet50(pretrained=True)
@@ -137,3 +137,8 @@ class ResNet50(nn.Module):
     def extract_propabilities(self, image):
         outputs = self(image)
         return outputs
+
+    def get_classification_result(self,image):
+        outputs = self(image)
+        _, output_label = torch.max(outputs, dim=1)
+        return output_label

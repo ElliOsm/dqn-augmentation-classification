@@ -61,7 +61,7 @@ def data_reader_train(dir):
     return dataloaders
 
 
-def data_reader_test(dir):
+def data_reader_test(dir):  
     data_transform = transforms.Compose([
         transforms.Resize([224, 224]),
         # converts all images to (0,1]
@@ -83,7 +83,6 @@ def data_reader_test(dir):
 
 def data_reader(dir):
     image_dataset = datasets.ImageFolder(dir)
-
 
     data_transform = transforms.Compose([
         transforms.Resize([224, 224]),
@@ -138,7 +137,6 @@ def data_reader(dir):
 
 
 def data_reader_chestxray(dir):
-
     data_transform = transforms.Compose([
         transforms.Resize([224, 224]),
         # converts all images to (0,1]
