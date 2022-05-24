@@ -2,6 +2,7 @@ import os
 from thesis.dqn_try.dqn import DQNAgent
 from thesis.data_prossesing.data_pytorch import data_reader, get_default_device
 from thesis.model.ResNet50_classifier import ResNet50
+import numpy as np
 
 # set device
 device = get_default_device()
@@ -20,21 +21,35 @@ classifier = ResNet50()
 classifier.freeze()
 classifier.to("cuda")
 
-print("Label:")
-print(label)
-
-
 for e in range(agent.episodes):
     state = image.to("cuda")
     action = agent.select_action(image)
     new_state = agent.apply_action(action, image).to("cuda")
+
+    metrics_before = classifier.extract_propabilities(image=state)
     metrics_before = classifier.extract_propabilities(image=state)
     metrics_after = classifier.extract_propabilities(image=new_state)
-    metrics_before_numpy = metrics_before.to("cpu").detach().numpy()
-    metrics_after_numpy = metrics_after.to("cpu").detach().numpy()
-    output_label_before = classifier.get_classification_result(image=state)
-    output_label_after = classifier.get_classification_result(image=new_state)
-    reward = agent.get_reward_according_to_label(metrics_before_numpy, metrics_after_numpy,output_label_before,output_label_after, label)
-    agent.train_model(image, action, reward)
-    agent.target_net.load_state_dict(agent.policy_net.state_dict())
+    metrics_before_class0 = metrics_before[0][0].to("cpu").detach().numpy()
+    metrics_before_class1 = metrics_before[0][1].to("cpu").detach().numpy()
+    metrics_after_class0 = metrics_after[0][0].to("cpu").detach().numpy()
+    metrics_after_class1 = metrics_after[0][1].to("cpu").detach().numpy()
+    output_label_before = classifier.get_classification_result(image=state).item()
+    output_label_after = classifier.get_classification_result(image=new_state).item()
+    if output_label_before == 0:
+        metrics_before_cc = metrics_before_class0
+        metrics_after_cc = metrics_after_class0
+    else:
+        metrics_before_cc = metrics_before_class1
+        metrics_after_cc = metrics_after_class1
+    print(metrics_before_cc, metrics_after_cc, output_label_before,
+          output_label_after, label)
+    reward = agent.get_reward_according_to_label(m_before=metrics_before_cc,
+                                                 label_before=output_label_before,
+                                                 m_after=metrics_after_cc,
+                                                 label_after=output_label_after,
+                                                 label_target=label)
+    print(metrics_before_cc, metrics_after_cc)
+    print(reward)
+    #agent.train_model(image, action, reward)
+    #agent.target_net.load_state_dict(agent.policy_net.state_dict())
 print('Complete')

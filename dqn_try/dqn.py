@@ -6,7 +6,9 @@ from torchvision import transforms
 
 from thesis.dqn_try.buffer import ReplayMemory
 from thesis.dqn_try.dqn_architectuer import DQN
-from thesis.model.ResNet50_classifier import ResNet50
+
+
+# from thesis.model.ResNet50_classifier import ResNet50from thesis.model.ResNet50_classifier import ResNet50
 
 
 class DQNAgent:
@@ -39,12 +41,15 @@ class DQNAgent:
         self.batch_size = batch_size
         self.steps_done = 0
 
-        self.threshold = 0.80
+        self.threshold = 0.02
 
-        self.classifier = ResNet50(pretrained=True)
-        if dir is not None:
-            self.classifier.load_state_dict(torch.load(dir))
-            print("weights loaded successfully from: ", dir)
+        # self.classifier = ResNet50(pretrained=True)
+        # if dir is not None:
+        #     self.classifier.load_state_dict(torch.load(dir))
+        #     print("weights loaded successfully from: ", dir)        # self.classifier = ResNet50(pretrained=True)
+        # if dir is not None:
+        #     self.classifier.load_state_dict(torch.load(dir))
+        #     print("weights loaded successfully from: ", dir)
 
     # adjust_contrast
     def action1(self, image):
@@ -130,14 +135,30 @@ class DQNAgent:
         else:
             return -1
 
-    def get_reward_according_to_label(self, m_before,label_before, m_after,label_after, label_target):
+    def get_reward_according_to_label(self, m_before, label_before, m_after, label_after, label_target):
         if label_after == label_target:
             return 1
         elif label_before == label_target:
             return 0
         else:
-            print(m_before)
-            exit()
+            print("inside reward func")
+            difference = m_after - m_before
+            print("Difference:", difference)
+            if abs(difference) > self.threshold:
+                if label_target == 1:
+                    if m_after > m_before:
+                        return 1
+                    else:
+                        return -1
+                else:
+                    if m_after > m_before:
+                        return 1
+                    else:
+                        return -1
+            elif difference == 0:
+                return 0
+            else:
+                return -1
 
     def get_Q_value(self, state):
         q_values = self.policy_net(state)
@@ -160,7 +181,6 @@ class DQNAgent:
             param.grad.data.clamp_(-1, 1)
         self.policy_net.optimizer.step()
 
-
     # https://stackoverflow.com/questions/57727372/how-do-i-get-the-value-of-a-tensor-in-pytorch
     def get_difference(self, prob):
         prob_array = prob.cpu().detach().numpy()
@@ -168,23 +188,23 @@ class DQNAgent:
         prob0 = prob_array_copy[0][0]
         prob1 = prob_array_copy[0][1]
         return abs((prob0) - (prob1))
-
-    def predict_difference(self, image, model, target_label):
-        probs = model.extract_propabilities(image).to("cuda")
-        m_before = self.get_difference(probs)
-        for e in range(self.episodes):
-            action_num = self.select_random_action()
-            image_after = self.apply_action(action_num, image)
-            probs_after = model.extract_features(image_after.to("cuda"))
-            m_after = self.get_features(probs_after)
-            print(m_after)
-            reward = self.get_reward(m_after, target_label)
-            # state_num = self.get_state(reward)
-            # if state_num == 0:
-            state = image
-            next_state = image_after
-            # else:
-            #     state = image_after
-            #     next_state = image
-            # done, next_state = self.is_done(next_state)
-            self.training()
+    #
+    # def predict_difference(self, image, model, target_label):
+    #     probs = model.extract_propabilities(image).to("cuda")
+    #     m_before = self.get_difference(probs)
+    #     for e in range(self.episodes):
+    #         action_num = self.select_random_action()
+    #         image_after = self.apply_action(action_num, image)
+    #         probs_after = model.extract_features(image_after.to("cuda"))
+    #         m_after = self.get_features(probs_after)
+    #         print(m_after)
+    #         reward = self.get_reward(m_after, target_label)
+    #         # state_num = self.get_state(reward)
+    #         # if state_num == 0:
+    #         state = image
+    #         next_state = image_after
+    #         # else:
+    #         #     state = image_after
+    #         #     next_state = image
+    #         # done, next_state = self.is_done(next_state)
+    #         self.training()
