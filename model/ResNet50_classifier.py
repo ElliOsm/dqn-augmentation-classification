@@ -10,7 +10,6 @@ import torchvision
 import torchvision.models as models
 
 
-# TODO: CONFIDENCE SCORE? !=0.50
 class ResNet50(nn.Module):
 
     def __init__(self, pretrained=True):

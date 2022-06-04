@@ -46,9 +46,6 @@ class DQNAgent:
         # self.classifier = ResNet50(pretrained=True)
         # if dir is not None:
         #     self.classifier.load_state_dict(torch.load(dir))
-        #     print("weights loaded successfully from: ", dir)        # self.classifier = ResNet50(pretrained=True)
-        # if dir is not None:
-        #     self.classifier.load_state_dict(torch.load(dir))
         #     print("weights loaded successfully from: ", dir)
 
     # adjust_contrast

@@ -24,24 +24,6 @@ class qlearning:
         self.exploration_min = 0.1
         self.steps_done = 0
 
-    #
-    # # horizontal flip
-    # def action3(self, image):
-    #     unorm = UnNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
-    #     unorm(image)
-    #
-    #     transform = transforms.Compose([
-    #         transforms.ToPILImage()
-    #     ])
-    #     image = transform(image)
-    #     image = transforms.functional.hflip(img=image)
-    #     transform = transforms.Compose([
-    #         transforms.ToTensor(),
-    #         transforms.Normalize([0.485, 0.456, 0.406],
-    #                              [0.229, 0.224, 0.225])
-    #     ])
-    #
-    #     return transform(image)
 
     # adjust_contrast
     def action1(self, image):
@@ -96,28 +78,28 @@ class qlearning:
     def select_random_action(self):
         return random.randint(0, 2)
 
-    def select_action(self, image):
-        # define epsilon
-        if self.steps_done < 10:
-            epsilon = self.exploration
-        else:
-            epsilon = self.exploration_min
-        self.steps_done += 1
+    def select_action(self):
+        # # define epsilon
+        # if self.steps_done < 10:
+        #     epsilon = self.exploration
+        # else:
+        #     epsilon = self.exploration_min
+        # self.steps_done += 1
+        #
+        # # https://stackoverflow.com/questions/33359740/random-number-between-0-and-1-in-python
+        # if np.random.uniform(0, 1) < epsilon:
+        #     print("random")
+        #     action_num = random.randint(0, 2)
+        # else:
+        #     print("qtable")
+        #     max_value = np.amax(self.qTable.all(axis=1))
+        #     for i in self.qTable[0,]:
+        #         if self.qTable[0,i] == max_value:
+        #             action_num = i
+        #
+        # return action_num
 
-        # https://stackoverflow.com/questions/33359740/random-number-between-0-and-1-in-python
-        if np.random.uniform(0, 1) < epsilon:
-            print("random")
-            action_num = random.randint(0, 2)
-        else:
-            print("qtable")
-            max_value = np.amax(self.qTable.all(axis=1))
-            for i in self.qTable[0,]:
-                if self.qTable[0,i] == max_value:
-                    action_num = i
-
-
-
-        return action_num
+        return random.randint(0, 2)
 
     def apply_action(self, action_num, image):
         action = self.actions[action_num]
