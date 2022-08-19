@@ -22,18 +22,17 @@ class resnetDqn:
         self.exploration = 1
         self.exploration_min = 0.1
 
-        self.model = ResNet50Rl()
-        self.model.to(device)
-
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
-        self.loss_func = nn.MSELoss()
-
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+        self.model = ResNet50Rl()
+        self.model.to(self.device)
 
         self.batch_size = batch_size
         self.steps_done = 0
 
         self.threshold = 0.02
+
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
     # adjust_contrast
     def action1(self, image):
@@ -95,10 +94,10 @@ class resnetDqn:
 
         # https://stackoverflow.com/questions/33359740/random-number-between-0-and-1-in-python
         if np.random.uniform(0, 1) < epsilon:
-            print("random")
+            print("Choose an action at random.(exploration)")
             action_num = random.randint(0, 2)
         else:
-            print("policy net")
+            print("Choose an action according to policy net.(exploitation)")
             action_num = self.model(image)
             _, action_num = torch.max(action_num, dim=1)
             action_num = action_num.item()
@@ -113,23 +112,15 @@ class resnetDqn:
     def get_reward_according_to_label(self, m_before, label_before, m_after, label_after, label_target):
         if label_after == label_target:
             return 1
-        elif label_before == label_target:
-            return 0
         else:
             print("inside reward func")
             difference = m_after - m_before
             print("Difference:", difference)
             if abs(difference) > self.threshold:
-                if label_target == 1:
-                    if m_after > m_before:
-                        return 1
-                    else:
-                        return -1
+                if m_after > m_before:
+                    return 1
                 else:
-                    if m_after > m_before:
-                        return 1
-                    else:
-                        return -1
+                    return -1
             elif difference == 0:
                 return 0
             else:

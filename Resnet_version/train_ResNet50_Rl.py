@@ -5,7 +5,6 @@ from thesis.model.ResNet50_classifier import ResNet50
 
 import os
 
-
 # set device
 device = get_default_device()
 print("Device:", device)
@@ -25,38 +24,62 @@ data = next(iter(dataloaders['test']))
 image = data[0].to("cuda")
 label = data[1].item()
 
+correct = 0
+total = 0
 
 for e in range(rl_model.episodes):
-    state = image.to("cuda")
-    action = rl_model.select_action(image)
-    new_state = rl_model.apply_action(action, image).to("cuda")
+    print('Epoch {}/{}'.format(e, rl_model.episodes))
+    print('-' * 10)
+    for item in dataloaders['test']:
+        image = item[0].to("cuda")
+        label = item[1].item()
+        state = image
+        action = rl_model.select_action(image)
+        new_state = rl_model.apply_action(action, image).to("cuda")
 
-    metrics_before = feature_extractor.extract_propabilities(image=state)
-    metrics_after = feature_extractor.extract_propabilities(image=new_state)
-    metrics_before_class0 = metrics_before[0][0].to("cpu").detach().numpy()
-    metrics_before_class1 = metrics_before[0][1].to("cpu").detach().numpy()
-    metrics_after_class0 = metrics_after[0][0].to("cpu").detach().numpy()
-    metrics_after_class1 = metrics_after[0][1].to("cpu").detach().numpy()
-    output_label_before = feature_extractor.get_classification_result(image=state).item()
-    output_label_after = feature_extractor.get_classification_result(image=new_state).item()
-    if output_label_before == 0:
-        metrics_before_cc = metrics_before_class0
-        metrics_after_cc = metrics_after_class0
-    else:
-        metrics_before_cc = metrics_before_class1
-        metrics_after_cc = metrics_after_class1
-    print(metrics_before_cc, metrics_after_cc, output_label_before,
-          output_label_after, label)
-    reward = rl_model.get_reward_according_to_label(m_before=metrics_before_cc,
-                                                 label_before=output_label_before,
-                                                 m_after=metrics_after_cc,
-                                                 label_after=output_label_after,
-                                                 label_target=label)
-    print(metrics_before_cc, metrics_after_cc)
-    print(reward)
-    print("IMAGE BEFORE:", state.size())
-    print("IMAGE AFTER:", new_state.size())
-    # model.train_model(image, action, reward)
-    # model.target_net.load_state_dict(model.policy_net.state_dict())
-print('Complete')
+        metrics_before = feature_extractor.extract_propabilities(image=state)
+        metrics_after = feature_extractor.extract_propabilities(image=new_state)
+        metrics_before_class0 = metrics_before[0][0].to("cpu").detach().numpy()
+        metrics_before_class1 = metrics_before[0][1].to("cpu").detach().numpy()
+        metrics_after_class0 = metrics_after[0][0].to("cpu").detach().numpy()
+        metrics_after_class1 = metrics_after[0][1].to("cpu").detach().numpy()
+
+        output_label_before = feature_extractor.get_classification_result(image=state).item()
+        output_label_after = feature_extractor.get_classification_result(image=new_state).item()
+
+        if output_label_before == 0:
+            metrics_before_cc = metrics_before_class0
+            metrics_after_cc = metrics_after_class0
+        else:
+            metrics_before_cc = metrics_before_class1
+            metrics_after_cc = metrics_after_class1
+
+        reward = rl_model.get_reward_according_to_label(m_before=metrics_before_cc,
+                                                        label_before=output_label_before,
+                                                        m_after=metrics_after_cc,
+                                                        label_after=output_label_after,
+                                                        label_target=label)
+
+        q_values = rl_model.model(state)
+        observed_q_value = reward
+
+        loss_value = (observed_q_value - q_values)**2
+        #https://stackoverflow.com/questions/64856195/what-is-tape-based-autograd-in-pytorch
+        loss_value.sum().backward()
+        rl_model.optimizer.step()
+        rl_model.optimizer.zero_grad()
+
+        if reward == 1:
+            correct = correct +1
+        total = total +1
+
+
+print("outcome : " )
+print(correct)
+print(total)
+
+# import torch
+# weight_dir = os.path.join('..', 'weights', 'train_rl_minus_chestxray_dataset.hdf5')
+# torch.save(rl_model.model.state_dict(), weight_dir)
+
 
