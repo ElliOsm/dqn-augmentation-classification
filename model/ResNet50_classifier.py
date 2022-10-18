@@ -123,6 +123,17 @@ class ResNet50(nn.Module):
             100. * correct / total, correct, total))
         # print("Confidense score",counter, "/", all)
 
+    def test_image(self,inputs):
+        with torch.no_grad():
+            self.eval()
+            # calculate outputs by running images through the network
+            outputs = self(inputs)
+            probs = nn.Softmax(dim=1)
+            outputs = probs(outputs)
+            _, preds = torch.max(outputs, dim=1)
+            return preds
+
+
     # https://discuss.pytorch.org/t/how-can-l-use-the-pre-trained-resnet-to-extract-feautres-from-my-own-dataset/9008/2
     def extract_features(self, image):
         model = self.network
