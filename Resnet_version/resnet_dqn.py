@@ -106,6 +106,7 @@ class resnetDqn:
 
     def apply_action(self, action_num, image):
         action = self.actions[action_num]
+        print("Action choosen: ", action)
         image = action(image)
         return image
 

@@ -116,7 +116,7 @@ def data_reader(dir):
                                                        pin_memory=False)
 
     valid_dataset_loader = torch.utils.data.DataLoader(valid_dataset,
-                                                       batch_size=32,
+                                                       batch_size=1,
                                                        shuffle=True,
                                                        # sampler=sampler,
                                                        drop_last=True,

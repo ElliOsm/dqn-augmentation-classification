@@ -30,12 +30,7 @@ weight_dir = os.path.join('..', 'weights', 'train_chestxray_dataset.hdf5')
 class_model.load_state_dict(torch.load(weight_dir))
 print("Weights loaded successfully from: ", weight_dir)
 
-weight_rl_dir = os.path.join('..', 'weights', 'train_rl_chestxray_dataset.hdf5')
-rl_model.model.load_state_dict(torch.load(weight_rl_dir))
-print("Weights loaded successfully from: ", weight_rl_dir)
-
 torch.cuda.empty_cache()
-
 
 class_count = [1583, 4273]
 w0 = (class_count[1]) / (class_count[0])
@@ -51,9 +46,10 @@ for batch in dataloaders['train']:
             label = label.to(device).item()
 
             q_values = rl_model.model(state)
+
             _, action = torch.max(q_values, dim=1)
 
-            #Because it is returned in tensor and we need it as number
+            # Because it is returned in tensor and we need it as number
             action = action.item()
 
             new_state = rl_model.apply_action(action, image).to(device)
@@ -63,18 +59,6 @@ for batch in dataloaders['train']:
 
             _, output_label_before = torch.max(metrics_before, dim=1)
             _, output_label_after = torch.max(metrics_after, dim=1)
-
-            # metrics_before_class0 = metrics_before[0][0].to("cpu").detach().numpy()
-            # metrics_before_class1 = metrics_before[0][1].to("cpu").detach().numpy()
-            # metrics_after_class0 = metrics_after[0][0].to("cpu").detach().numpy()
-            # metrics_after_class1 = metrics_after[0][1].to("cpu").detach().numpy()
-
-            # if output_label_before == 0:
-            #     metrics_before_cc = metrics_before_class0
-            #     metrics_after_cc = metrics_after_class0
-            # else:
-            #     metrics_before_cc = metrics_before_class1
-            #     metrics_after_cc = metrics_after_class1
 
             reward = rl_model.get_reward_according_to_label(m_before=metrics_before,
                                                             label_before=output_label_before,
@@ -88,7 +72,7 @@ for batch in dataloaders['train']:
             print("Q-value: ", q_value)
             print("Observed Q-value: ", observed_q_value)
 
-            loss_value = (class_weights * (observed_q_value - q_value) ** 2).mean()
+            loss_value = (observed_q_value - q_value) ** 2
             print(loss_value)
 
             # https://stackoverflow.com/questions/64856195/what-is-tape-based-autograd-in-pytorch
@@ -112,6 +96,43 @@ for batch in dataloaders['train']:
 
 print('\nTrain Accuracy: %2d%% (%2d/%2d)' % (100. * correct / total, correct, total))
 
-# weight_rl_dir = os.path.join('..', 'weights', 'train_rl_chestxray_dataset.hdf5')
-# torch.save(rl_model.model.state_dict(), weight_rl_dir)
-# print("Weights saved successfully at: ", weight_rl_dir)
+correct_rl = 0
+total_rl = 0
+for batch in dataloaders['val']:
+    for image, label in zip(batch[0], batch[1]):
+        image = image.to(device).to("cuda").unsqueeze(0)
+        label = label.to(device).to("cuda")
+
+        prediction_b4 = class_model.test_image(image)
+
+        if not (prediction_b4 == label):
+            state = image
+
+            outputs = rl_model.model(state)
+            _, preds = torch.max(outputs, dim=1)
+
+            action = preds.item()
+
+            new_state = rl_model.apply_action(action, image).to("cuda")
+
+            prediction_after = class_model.test_image(new_state)
+
+            if prediction_after == label:
+                correct_rl = correct_rl + 1
+                correct = correct + 1
+
+            total_rl = total_rl + 1
+        else:
+            correct = correct + 1
+
+        total = total + 1
+
+print('\nVal Accuracy: %2d%% (%2d/%2d)' % (
+    100. * correct / total, correct, total))
+
+print('\nVal Accuracy at rl only: %2d%% (%2d/%2d)' % (
+    100. * correct_rl / total_rl, correct_rl, total_rl))
+
+weight_rl_dir = os.path.join('..', 'weights', 'train_rl_chestxray_dataset.hdf5')
+torch.save(rl_model.model.state_dict(), weight_rl_dir)
+print("Weights saved successfully at: ", weight_rl_dir)
