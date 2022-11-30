@@ -25,8 +25,9 @@ class ResNet50Rl(nn.Module):
             param.require_grad = False
 
         num_in_features = self.network.fc.in_features
-        self.network.fc = nn.Linear(num_in_features, 3)
-        self.softmax = nn.Softmax(dim=1)
+        self.network.fc = nn.Sequential(
+            nn.Linear(num_in_features, 3),
+            nn.Softmax(dim=1))
 
     def forward(self, x):
         return self.network(x)
