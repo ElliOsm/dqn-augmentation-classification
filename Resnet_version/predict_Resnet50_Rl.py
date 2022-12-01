@@ -22,13 +22,13 @@ weight_dir = os.path.join('..', 'weights', 'train_chestxray_dataset.hdf5')
 class_model.load_state_dict(torch.load(weight_dir))
 print("Weights for classification model loaded successfully from: ", weight_dir)
 
-weight_dir = os.path.join('..', 'weights', 'train_rl_chestxray_dataset.hdf5')
-rl_model.model.load_state_dict(torch.load(weight_dir))
+weight_rl_dir = os.path.join('..', 'weights', 'train_rl_chestxray_dataset_v2.hdf5')
+rl_model.model.load_state_dict(torch.load(weight_rl_dir))
 print("weights for reinforcement model loaded successfully from: ", weight_dir)
 
 print("Dataset: CHESTXRAY")
-data_dir = os.path.join('..', 'data', 'trainFolder', 'data')
-dataloaders = data_reader(data_dir)
+dataloaders_dir = os.path.join('..', 'dataloaders', 'dataloaders.pt')
+dataloaders = torch.load(dataloaders_dir)
 
 correct = 0
 total = 0
@@ -38,7 +38,7 @@ total_rl = 0
 
 with torch.no_grad():
     rl_model.model.eval()
-    for batch in dataloaders['train']:
+    for batch in dataloaders['test']:
         for image, label in zip(batch[0], batch[1]):
             image = image.to(device).to("cuda").unsqueeze(0)
             label = label.to(device).to("cuda")
@@ -54,8 +54,6 @@ with torch.no_grad():
                 _, preds = torch.max(outputs, dim=1)
 
                 action = preds.item()
-
-                print(action)
 
                 new_state = rl_model.apply_action(action, image).to("cuda")
 
