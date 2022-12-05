@@ -106,7 +106,6 @@ class resnetDqn:
 
     def apply_action(self, action_num, image):
         action = self.actions[action_num]
-        print("Action choosen: ", action)
         image = action(image)
         return image
 
@@ -114,16 +113,19 @@ class resnetDqn:
                                       m_before, label_before,
                                       m_after, label_after,
                                       label_target):
+        if label_target == 0:
+            label_target_diff = -1
+        else:
+            label_target_diff = 1
+
         if label_after == label_target:
             if label_before == label_after:
                 m_before_cc = m_before[0][label_target].to("cpu").detach().numpy()
                 m_after_cc = m_after[0][label_target].to("cpu").detach().numpy()
-                difference = abs(m_after_cc) - abs(m_before_cc)
-
-                if abs(m_after_cc) > abs(m_before_cc):
+                difference = abs(m_after_cc - m_before_cc)
+                if abs(label_target_diff - m_after_cc) < abs(label_target_diff - m_before_cc):
                     return difference
                 else:
-
                     difference = -difference
                     return difference
             else:
@@ -133,9 +135,8 @@ class resnetDqn:
                 temp = label_after.to("cpu").detach().numpy().item()
                 m_before_cc = m_before[0][temp].to("cpu").detach().numpy()
                 m_after_cc = m_after[0][temp].to("cpu").detach().numpy()
-                difference = abs(m_before_cc) - abs(m_after_cc)
-
-                if abs(m_after_cc) < abs(m_before_cc):
+                difference = abs(m_after_cc - m_before_cc)
+                if abs(label_target_diff - m_after_cc) > abs(label_target_diff - m_before_cc):
                     return difference
                 else:
                     difference = -difference
