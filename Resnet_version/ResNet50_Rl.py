@@ -5,7 +5,7 @@ import torchvision
 
 class ResNet50Rl(nn.Module):
 
-    def __init__(self, pretrained=True):
+    def __init__(self, pretrained=False):
         super().__init__()
         if pretrained:
             self.network = torchvision.models.resnet50(pretrained=True)
@@ -19,7 +19,13 @@ class ResNet50Rl(nn.Module):
 
         num_in_features = self.network.fc.in_features
         self.network.fc = nn.Sequential(
-            nn.Linear(num_in_features, 3),
+            nn.Linear(num_in_features, 64),
+            nn.ReLU(),
+            nn.Linear(64,32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16,3),
             nn.Softmax(dim=1))
 
     def forward(self, x):

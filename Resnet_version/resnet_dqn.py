@@ -18,7 +18,7 @@ class resnetDqn:
 
         self.learning_rate = 0.001
         self.discount = 0.3
-        self.episodes = 10
+        self.episodes = 20
         self.exploration = 1
         self.exploration_min = 0.1
 
