@@ -22,17 +22,102 @@ weight_dir = os.path.join('..', 'weights', 'train_chestxray_dataset.hdf5')
 class_model.load_state_dict(torch.load(weight_dir))
 print("Weights for classification model loaded successfully from: ", weight_dir)
 
-weight_rl_dir = os.path.join('..', 'weights', 'train_rl_chestxray_dataset_v2.hdf5')
+weight_rl_dir = os.path.join('..', 'weights', 'train_rl_chestxray_dataset_deep.hdf5')
 rl_model.model.load_state_dict(torch.load(weight_rl_dir))
 print("weights for reinforcement model loaded successfully from: ", weight_dir)
 
 print("Dataset: CHESTXRAY")
-dataloaders_dir = os.path.join('..', 'dataloaders', 'dataloaders.pt')
+dataloaders_dir = os.path.join('..', 'dataloaders', 'dataloaders_deep.pt')
 dataloaders = torch.load(dataloaders_dir)
 
+print("\n***************************************** Predict Scenarios *****************************************")
+print("\n**Everything goes through RL and then classified.")
+
+correct_to_correct_more_confident = 0
+correct_to_correct_less_confident = 0
+correct_to_incorrect = 0
+incorrect_to_correct = 0
+incorrect_to_incorrect_more_confident = 0
+incorrect_to_incorrect_less_confident = 0
+correct_rl = 0
+total_rl = 0
+
+with torch.no_grad():
+    rl_model.model.eval()
+    for batch in dataloaders['test']:
+        for image, label in zip(batch[0], batch[1]):
+            image = image.to(device).to("cuda").unsqueeze(0)
+            label = label.to(device).to("cuda")
+            state = image
+
+            outputs = rl_model.model(state)
+            _, preds = torch.max(outputs, dim=1)
+
+            action = preds.item()
+
+            new_state = rl_model.apply_action(action, image).to("cuda")
+
+            propabilities_after = class_model.extract_propabilities(new_state)
+            _, prediction_after = torch.max(propabilities_after, dim=1)
+
+            propabilities_before = class_model.extract_propabilities(image)
+            _, prediction_before = torch.max(propabilities_before, dim=1)
+
+            reward = rl_model.get_reward_according_to_label(m_before=propabilities_before,
+                                                            label_before=prediction_before,
+                                                            m_after=propabilities_after,
+                                                            label_after=prediction_after,
+                                                            label_target=label)
+
+            prediction_after = prediction_after.item()
+            prediction_before = prediction_before.item()
+            label = label.item()
+            # print('before = ', prediction_before)
+            # print('after = ', prediction_after)
+            # print('label = ', label)
+            # print('reward = ', reward)
+
+            print('******************************')
+            print(prediction_before)
+            print(prediction_after)
+
+            if prediction_before == label:
+                if prediction_after != label:
+                    correct_to_incorrect = correct_to_incorrect + 1
+                else:
+                    if 0 < reward < 1:
+                        correct_to_correct_more_confident = correct_to_correct_more_confident + 1
+                    elif -1 < reward < 0:
+                        correct_to_correct_less_confident = correct_to_correct_less_confident + 1
+            else:
+                if prediction_after == label:
+                    incorrect_to_correct = incorrect_to_correct + 1
+                else:
+                    if 0 < reward < 1:
+                        incorrect_to_incorrect_more_confident = incorrect_to_incorrect_more_confident + 1
+                    elif -1 < reward < 0:
+                        incorrect_to_incorrect_less_confident = incorrect_to_incorrect_less_confident + 1
+
+            if prediction_after == label:
+                correct_rl = correct_rl + 1
+
+            total_rl = total_rl + 1
+
+print('Test Accuracy: %2d%% (%2d/%2d)' % (
+    100. * correct_rl / total_rl, correct_rl, total_rl))
+
+print('Corrects that were changed to incorrect:', correct_to_incorrect)
+print('Corrects that were not changed but were more confident:', correct_to_correct_more_confident)
+print('Corrects that were not changed but were less confident:', correct_to_correct_less_confident)
+print('Incorrects that were changed to correct:', incorrect_to_correct)
+print('Incorrects that were not changed but were more confident:', incorrect_to_incorrect_more_confident)
+print('Incorrects that were not changed but were less confident:', incorrect_to_incorrect_less_confident)
+
+print("\n**Only incorrect predictions are fed into RL and then Re-classified.")
+
+correct_to_incorrect = 0
 correct = 0
 total = 0
-
 correct_rl = 0
 total_rl = 0
 
@@ -45,32 +130,40 @@ with torch.no_grad():
 
             prediction_b4 = class_model.test_image(image)
 
-            if not (prediction_b4 == label):
+            if prediction_b4 != label:
                 state = image
 
                 outputs = rl_model.model(state)
-                probs = nn.Softmax(dim=1)
-                outputs = probs(outputs)
                 _, preds = torch.max(outputs, dim=1)
-
                 action = preds.item()
 
                 new_state = rl_model.apply_action(action, image).to("cuda")
 
                 prediction_after = class_model.test_image(new_state)
 
+                if prediction_b4 == label:
+                    if prediction_after != label:
+                        correct_to_incorrect = correct_to_incorrect + 1
+
                 if prediction_after == label:
                     correct_rl = correct_rl + 1
                     correct = correct + 1
 
                 total_rl = total_rl + 1
+
+                print(prediction_after)
             else:
                 correct = correct + 1
 
             total = total + 1
 
-print('\nTest Accuracy: %2d%% (%2d/%2d)' % (
+print('Test Accuracy: %2d%% (%2d/%2d)' % (
     100. * correct / total, correct, total))
 
-print('\nTest Accuracy at rl only: %2d%% (%2d/%2d)' % (
+print('Test Accuracy at rl only: %2d%% (%2d/%2d)' % (
     100. * correct_rl / total_rl, correct_rl, total_rl))
+
+print('Corrects that were changed to incorrect:', correct_to_incorrect)
+
+print("\n**Only Classifier without RL prediction.")
+prediction = class_model.test_model(dataloaders['test'], device)

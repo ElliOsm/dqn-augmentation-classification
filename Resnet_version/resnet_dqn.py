@@ -18,7 +18,7 @@ class resnetDqn:
 
         self.learning_rate = 0.001
         self.discount = 0.3
-        self.episodes = 20
+        self.episodes = 10
         self.exploration = 1
         self.exploration_min = 0.1
 
@@ -118,6 +118,9 @@ class resnetDqn:
         else:
             label_target_diff = 1
 
+        label_after = label_after.item()
+        label_before = label_before.item()
+
         if label_after == label_target:
             if label_before == label_after:
                 m_before_cc = m_before[0][label_target].to("cpu").detach().numpy()
@@ -129,12 +132,13 @@ class resnetDqn:
                     difference = -difference
                     return difference
             else:
+                print('Changed', label_before, label_after, label_target)
+                exit()
                 return 1
         else:
             if label_before == label_after:
-                temp = label_after.to("cpu").detach().numpy().item()
-                m_before_cc = m_before[0][temp].to("cpu").detach().numpy()
-                m_after_cc = m_after[0][temp].to("cpu").detach().numpy()
+                m_before_cc = m_before[0][label_after].to("cpu").detach().numpy()
+                m_after_cc = m_after[0][label_after].to("cpu").detach().numpy()
                 difference = abs(m_after_cc - m_before_cc)
                 if abs(label_target_diff - m_after_cc) > abs(label_target_diff - m_before_cc):
                     return difference
@@ -142,4 +146,6 @@ class resnetDqn:
                     difference = -difference
                     return difference
             else:
+                print('Changed', label_before, label_after, label_target)
+                exit()
                 return -1
