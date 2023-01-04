@@ -145,8 +145,12 @@ class ResNet50(nn.Module):
         return features
 
     def extract_propabilities(self, image):
-        outputs = self(image)
-        return outputs
+        with torch.no_grad():
+            self.eval()
+            outputs = self(image)
+            probs = nn.Softmax(dim=1)
+            outputs = probs(outputs)
+            return outputs
 
     def get_classification_result(self,image):
         outputs = self(image)

@@ -72,14 +72,6 @@ with torch.no_grad():
             prediction_after = prediction_after.item()
             prediction_before = prediction_before.item()
             label = label.item()
-            # print('before = ', prediction_before)
-            # print('after = ', prediction_after)
-            # print('label = ', label)
-            # print('reward = ', reward)
-
-            print('******************************')
-            print(prediction_before)
-            print(prediction_after)
 
             if prediction_before == label:
                 if prediction_after != label:
@@ -150,8 +142,6 @@ with torch.no_grad():
                     correct = correct + 1
 
                 total_rl = total_rl + 1
-
-                print(prediction_after)
             else:
                 correct = correct + 1
 

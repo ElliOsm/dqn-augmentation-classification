@@ -16,7 +16,7 @@ class resnetDqn:
         }
         self.action_space = len(self.actions)
 
-        self.learning_rate = 0.001
+        self.learning_rate = 0.01
         self.discount = 0.3
         self.episodes = 10
         self.exploration = 1
@@ -42,7 +42,7 @@ class resnetDqn:
             transforms.ToPILImage()
         ])
         image = transform(image)
-        image = transforms.functional.adjust_contrast(image, contrast_factor=3)
+        image = transforms.functional.adjust_contrast(image, contrast_factor=1.5)
         transform = transforms.Compose([
             transforms.ToTensor()
         ])
@@ -59,7 +59,7 @@ class resnetDqn:
             transforms.ToPILImage()
         ])
         image = transform(image)
-        image = transforms.functional.adjust_brightness(img=image, brightness_factor=2)
+        image = transforms.functional.adjust_brightness(img=image, brightness_factor=1.2)
         transform = transforms.Compose([
             transforms.ToTensor()
         ])
@@ -76,7 +76,7 @@ class resnetDqn:
             transforms.ToPILImage()
         ])
         image = transform(image)
-        image = transforms.functional.adjust_sharpness(img=image, sharpness_factor=10)
+        image = transforms.functional.adjust_sharpness(img=image, sharpness_factor=15)
         transform = transforms.Compose([
             transforms.ToTensor()
         ])
@@ -132,8 +132,6 @@ class resnetDqn:
                     difference = -difference
                     return difference
             else:
-                print('Changed', label_before, label_after, label_target)
-                exit()
                 return 1
         else:
             if label_before == label_after:
@@ -146,6 +144,4 @@ class resnetDqn:
                     difference = -difference
                     return difference
             else:
-                print('Changed', label_before, label_after, label_target)
-                exit()
                 return -1

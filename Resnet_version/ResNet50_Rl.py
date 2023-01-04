@@ -19,6 +19,7 @@ class ResNet50Rl(nn.Module):
 
         num_in_features = self.network.fc.in_features
         self.network.fc = nn.Sequential(
+            nn.Flatten(),
             nn.Linear(num_in_features, 64),
             nn.ReLU(),
             nn.Linear(64,32),
