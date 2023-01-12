@@ -117,8 +117,8 @@ class ResNet50(nn.Module):
                 # # print(preds)
                 # # compare predictions to true label
                 if preds == labels:
-                    correct += labels.size(0)
-                total += labels.size(0)
+                    correct = correct + 1
+                total = total + 1
         print('\nTest Accuracy: %2d%% (%2d/%2d)' % (
             100. * correct / total, correct, total))
         # print("Confidense score",counter, "/", all)

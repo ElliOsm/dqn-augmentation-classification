@@ -42,6 +42,9 @@ incorrect_to_incorrect_less_confident = 0
 correct_rl = 0
 total_rl = 0
 
+more_confident = 0
+less_confident = 0
+
 with torch.no_grad():
     rl_model.model.eval()
     for batch in dataloaders['test']:
@@ -63,32 +66,16 @@ with torch.no_grad():
             propabilities_before = class_model.extract_propabilities(image)
             _, prediction_before = torch.max(propabilities_before, dim=1)
 
-            reward = rl_model.get_reward_according_to_label(m_before=propabilities_before,
-                                                            label_before=prediction_before,
-                                                            m_after=propabilities_after,
-                                                            label_after=prediction_after,
-                                                            label_target=label)
+            reward = rl_model.get_reward(propabilities_before, propabilities_after, label)
+
+            if reward >= 0:
+                more_confident = more_confident + 1
+            else:
+                less_confident = less_confident + 1
 
             prediction_after = prediction_after.item()
             prediction_before = prediction_before.item()
             label = label.item()
-
-            if prediction_before == label:
-                if prediction_after != label:
-                    correct_to_incorrect = correct_to_incorrect + 1
-                else:
-                    if 0 < reward < 1:
-                        correct_to_correct_more_confident = correct_to_correct_more_confident + 1
-                    elif -1 < reward < 0:
-                        correct_to_correct_less_confident = correct_to_correct_less_confident + 1
-            else:
-                if prediction_after == label:
-                    incorrect_to_correct = incorrect_to_correct + 1
-                else:
-                    if 0 < reward < 1:
-                        incorrect_to_incorrect_more_confident = incorrect_to_incorrect_more_confident + 1
-                    elif -1 < reward < 0:
-                        incorrect_to_incorrect_less_confident = incorrect_to_incorrect_less_confident + 1
 
             if prediction_after == label:
                 correct_rl = correct_rl + 1
@@ -98,12 +85,11 @@ with torch.no_grad():
 print('Test Accuracy: %2d%% (%2d/%2d)' % (
     100. * correct_rl / total_rl, correct_rl, total_rl))
 
-print('Corrects that were changed to incorrect:', correct_to_incorrect)
-print('Corrects that were not changed but were more confident:', correct_to_correct_more_confident)
-print('Corrects that were not changed but were less confident:', correct_to_correct_less_confident)
-print('Incorrects that were changed to correct:', incorrect_to_correct)
-print('Incorrects that were not changed but were more confident:', incorrect_to_incorrect_more_confident)
-print('Incorrects that were not changed but were less confident:', incorrect_to_incorrect_less_confident)
+print('More confident: %2d%%  (%2d/%2d)' %
+      (100. * more_confident / correct_rl, more_confident, correct_rl))
+print('Less confident: %2d%%  (%2d/%2d)' %
+      (100. * less_confident / correct_rl, less_confident, correct_rl))
+
 
 print("\n**Only incorrect predictions are fed into RL and then Re-classified.")
 

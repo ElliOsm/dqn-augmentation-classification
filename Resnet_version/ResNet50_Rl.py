@@ -26,7 +26,6 @@ class ResNet50Rl(nn.Module):
             nn.ReLU(),
             nn.Linear(32, 16),
             nn.ReLU(),
-            nn.Flatten(),
             nn.Linear(16,3),
             nn.Softmax(dim=1))
 

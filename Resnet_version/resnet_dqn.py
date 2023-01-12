@@ -84,26 +84,6 @@ class resnetDqn:
         image = torch.unsqueeze(image, 0)
         return image
 
-    # def select_action(self, image):
-    #     # define epsilon
-    #     if self.steps_done < 10:
-    #         epsilon = self.exploration
-    #     else:
-    #         epsilon = self.exploration_min
-    #     self.steps_done += 1
-    #
-    #     # https://stackoverflow.com/questions/33359740/random-number-between-0-and-1-in-python
-    #     if np.random.uniform(0, 1) < epsilon:
-    #         print("Choose an action at random.(exploration)")
-    #         action_num = random.randint(0, 2)
-    #     else:
-    #         print("Choose an action according to policy net.(exploitation)")
-    #         action_num = self.model(image)
-    #         _, action_num = torch.max(action_num, dim=1)
-    #         action_num = action_num.item()
-    #
-    #     return action_num
-
     def apply_action(self, action_num, image):
         action = self.actions[action_num]
         image = action(image)
@@ -145,3 +125,9 @@ class resnetDqn:
                     return difference
             else:
                 return -1
+
+    def get_reward(self, m_before, m_after, label_target):
+        m_before_cc = m_before[0][label_target].to("cpu").detach().numpy()
+        m_after_cc = m_after[0][label_target].to("cpu").detach().numpy()
+        difference = m_after_cc - m_before_cc
+        return difference
