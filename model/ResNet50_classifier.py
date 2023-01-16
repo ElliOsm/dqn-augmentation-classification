@@ -117,13 +117,13 @@ class ResNet50(nn.Module):
                 # # print(preds)
                 # # compare predictions to true label
                 if preds == labels:
-                    correct = correct + 1
-                total = total + 1
+                    correct += labels.size(0)
+                total += labels.size(0)
         print('\nTest Accuracy: %2d%% (%2d/%2d)' % (
             100. * correct / total, correct, total))
         # print("Confidense score",counter, "/", all)
 
-    def test_image(self,inputs):
+    def test_image(self, inputs):
         with torch.no_grad():
             self.eval()
             # calculate outputs by running images through the network
@@ -132,7 +132,6 @@ class ResNet50(nn.Module):
             outputs = probs(outputs)
             _, preds = torch.max(outputs, dim=1)
             return preds
-
 
     # https://discuss.pytorch.org/t/how-can-l-use-the-pre-trained-resnet-to-extract-feautres-from-my-own-dataset/9008/2
     def extract_features(self, image):
@@ -152,7 +151,7 @@ class ResNet50(nn.Module):
             outputs = probs(outputs)
             return outputs
 
-    def get_classification_result(self,image):
+    def get_classification_result(self, image):
         outputs = self(image)
         _, output_label = torch.max(outputs, dim=1)
         return output_label

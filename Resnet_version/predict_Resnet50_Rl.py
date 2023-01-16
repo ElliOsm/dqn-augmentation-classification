@@ -33,15 +33,8 @@ dataloaders = torch.load(dataloaders_dir)
 print("\n***************************************** Predict Scenarios *****************************************")
 print("\n**Everything goes through RL and then classified.")
 
-correct_to_correct_more_confident = 0
-correct_to_correct_less_confident = 0
-correct_to_incorrect = 0
-incorrect_to_correct = 0
-incorrect_to_incorrect_more_confident = 0
-incorrect_to_incorrect_less_confident = 0
 correct_rl = 0
 total_rl = 0
-
 more_confident = 0
 less_confident = 0
 
@@ -93,7 +86,6 @@ print('Less confident: %2d%%  (%2d/%2d)' %
 
 print("\n**Only incorrect predictions are fed into RL and then Re-classified.")
 
-correct_to_incorrect = 0
 correct = 0
 total = 0
 correct_rl = 0

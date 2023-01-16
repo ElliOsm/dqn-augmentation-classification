@@ -1,4 +1,4 @@
-from ResNet50_Rl import ResNet50Rl
+from thesis.Resnet_version.ResNet50_Rl import ResNet50Rl
 import random
 import numpy as np
 import torch
