@@ -90,6 +90,7 @@ correct = 0
 total = 0
 correct_rl = 0
 total_rl = 0
+correct_to_incorrect=0
 
 with torch.no_grad():
     rl_model.model.eval()
