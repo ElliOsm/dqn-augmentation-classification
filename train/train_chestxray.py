@@ -35,7 +35,9 @@ print("class_weights: ", class_weights)
 
 # loss_func = nn.BCELoss()
 # loss_func = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.9,0.3]).to(device))
-loss_func = nn.CrossEntropyLoss(weight=class_weights)
+# #https://stats.stackexchange.com/questions/260505/should-i-use-a-categorical-cross-entropy-or-binary-cross-entropy-loss-for-binary
+# loss_func = nn.CrossEntropyLoss(weight=class_weights)
+loss_func = nn.BCELoss(weight=class_weights)
 optimiser = optim.Adam(model.parameters(), lr=0.0001)
 # optimiser = optim.SGD(model.parameters(),lr=0.001,momentum=0.9)
 num_epochs = 10
