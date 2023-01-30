@@ -32,8 +32,7 @@ class_weights = torch.FloatTensor([w0, w1]).to(device)
 print("class_weights: ", class_weights)
 
 # #https://stats.stackexchange.com/questions/260505/should-i-use-a-categorical-cross-entropy-or-binary-cross-entropy-loss-for-binary
-# loss_func = nn.CrossEntropyLoss(weight=class_weights)
-loss_func = nn.BCELoss(weight=class_weights)
+loss_func = nn.CrossEntropyLoss(weight=class_weights)
 optimiser = optim.Adam(model.parameters(), lr=0.0001)
 num_epochs = 10
 
