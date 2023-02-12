@@ -89,42 +89,63 @@ class resnetDqn:
         image = action(image)
         return image
 
-    def get_reward_according_to_label(self,
-                                      m_before, label_before,
-                                      m_after, label_after,
-                                      label_target):
-        if label_target == 0:
-            label_target_diff = -1
-        else:
-            label_target_diff = 1
+    def add_noise(self,image):
+        mean = 0
+        var = 10
+        sigma = var ** 0.5
+        gaussian = np.random.normal(mean, sigma, (224, 224))
 
-        label_after = label_after.item()
-        label_before = label_before.item()
+        image = np.squeeze(image)
+        transform = transforms.Compose([
+            transforms.ToPILImage()
+        ])
+        image = transform(image)
 
-        if label_after == label_target:
-            if label_before == label_after:
-                m_before_cc = m_before[0][label_target].to("cpu").detach().numpy()
-                m_after_cc = m_after[0][label_target].to("cpu").detach().numpy()
-                difference = abs(m_after_cc - m_before_cc)
-                if abs(label_target_diff - m_after_cc) < abs(label_target_diff - m_before_cc):
-                    return difference
-                else:
-                    difference = -difference
-                    return difference
-            else:
-                return 1
-        else:
-            if label_before == label_after:
-                m_before_cc = m_before[0][label_after].to("cpu").detach().numpy()
-                m_after_cc = m_after[0][label_after].to("cpu").detach().numpy()
-                difference = abs(m_after_cc - m_before_cc)
-                if abs(label_target_diff - m_after_cc) > abs(label_target_diff - m_before_cc):
-                    return difference
-                else:
-                    difference = -difference
-                    return difference
-            else:
-                return -1
+        noisy_image = np.zeros(image.shape, np.float32)
+        noisy_image = image + gaussian
+        transform = transforms.Compose([
+            transforms.ToTensor()
+        ])
+        image = transform(noisy_image)
+        return image
+
+
+    # def get_reward_according_to_label(self,
+    #                                   m_before, label_before,
+    #                                   m_after, label_after,
+    #                                   label_target):
+    #     if label_target == 0:
+    #         label_target_diff = -1
+    #     else:
+    #         label_target_diff = 1
+    #
+    #     label_after = label_after.item()
+    #     label_before = label_before.item()
+    #
+    #     if label_after == label_target:
+    #         if label_before == label_after:
+    #             m_before_cc = m_before[0][label_target].to("cpu").detach().numpy()
+    #             m_after_cc = m_after[0][label_target].to("cpu").detach().numpy()
+    #             difference = abs(m_after_cc - m_before_cc)
+    #             if abs(label_target_diff - m_after_cc) < abs(label_target_diff - m_before_cc):
+    #                 return difference
+    #             else:
+    #                 difference = -difference
+    #                 return difference
+    #         else:
+    #             return 1
+    #     else:
+    #         if label_before == label_after:
+    #             m_before_cc = m_before[0][label_after].to("cpu").detach().numpy()
+    #             m_after_cc = m_after[0][label_after].to("cpu").detach().numpy()
+    #             difference = abs(m_after_cc - m_before_cc)
+    #             if abs(label_target_diff - m_after_cc) > abs(label_target_diff - m_before_cc):
+    #                 return difference
+    #             else:
+    #                 difference = -difference
+    #                 return difference
+    #         else:
+    #             return -1
 
     def get_reward(self, m_before, m_after, label_target):
         m_before_cc = m_before[0][label_target].to("cpu").detach().numpy()

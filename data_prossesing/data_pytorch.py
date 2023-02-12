@@ -16,6 +16,9 @@ def data_reader(dir):
 
     data_transform = transforms.Compose([
         transforms.Resize([224, 224]),
+        transforms.RandomAdjustSharpness(sharpness_factor=15,p=0.2),
+        transforms.RandomAutocontrast(p=0.2),
+        transforms.RandomEqualize(p=0.2),
         # converts all images to (0,1]
         transforms.ToTensor(),
         # transforms.Normalize([0.485, 0.456, 0.406],
@@ -41,21 +44,18 @@ def data_reader(dir):
     train_dataset_loader = torch.utils.data.DataLoader(train_dataset,
                                                        batch_size=32,
                                                        shuffle=True,
-                                                       # sampler=sampler,
                                                        drop_last=True,
                                                        pin_memory=True)
 
     valid_dataset_loader = torch.utils.data.DataLoader(valid_dataset,
                                                        batch_size=1,
                                                        shuffle=True,
-                                                       # sampler=sampler,
                                                        drop_last=True,
                                                        pin_memory=True)
 
     test_dataset_loader = torch.utils.data.DataLoader(test_dataset,
                                                       batch_size=1,
                                                       shuffle=True,
-                                                      # sampler=sampler,
                                                       drop_last=True,
                                                       pin_memory=True)
 
@@ -64,7 +64,6 @@ def data_reader(dir):
                    'test': test_dataset_loader}
 
     return dataloaders
-
 
 
 def print_image(image):
@@ -79,4 +78,3 @@ def get_default_device():
         return torch.device('cuda')
     else:
         return torch.device('cpu')
-
