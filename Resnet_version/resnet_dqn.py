@@ -101,7 +101,6 @@ class resnetDqn:
         ])
         image = transform(image)
 
-        noisy_image = np.zeros(image.shape, np.float32)
         noisy_image = image + gaussian
         transform = transforms.Compose([
             transforms.ToTensor()
