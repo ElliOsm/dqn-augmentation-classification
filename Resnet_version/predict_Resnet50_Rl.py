@@ -61,10 +61,11 @@ with torch.no_grad():
 
             reward = rl_model.get_reward(propabilities_before, propabilities_after, label)
 
-            if reward >= 0:
-                more_confident = more_confident + 1
-            else:
-                less_confident = less_confident + 1
+            more_confident, less_confident = rl_model.getConfidence(label,
+                                                                    propabilities_after,
+                                                                    propabilities_before,
+                                                                    more_confident,
+                                                                    less_confident)
 
             prediction_after = prediction_after.item()
             prediction_before = prediction_before.item()
@@ -83,14 +84,13 @@ print('More confident: %2d%%  (%2d/%2d)' %
 print('Less confident: %2d%%  (%2d/%2d)' %
       (100. * less_confident / correct_rl, less_confident, correct_rl))
 
-
 print("\n**Only incorrect predictions are fed into RL and then Re-classified.")
 
 correct = 0
 total = 0
 correct_rl = 0
 total_rl = 0
-correct_to_incorrect=0
+correct_to_incorrect = 0
 
 with torch.no_grad():
     rl_model.model.eval()
@@ -136,3 +136,49 @@ print('Corrects that were changed to incorrect:', correct_to_incorrect)
 
 print("\n**Only Classifier without RL prediction.")
 prediction = class_model.test_model(dataloaders['test'], device)
+
+print("\n**Predictions with noise")
+
+correct_rl_with_noise = 0
+total_rl_with_noise = 0
+more_confident = 0
+less_confident = 0
+
+with torch.no_grad():
+    rl_model.model.eval()
+    for batch in dataloaders['test']:
+        for image, label in zip(batch[0], batch[1]):
+            image = image.to(device).to("cuda").unsqueeze(0)
+            label = label.to(device).to("cuda")
+            state = image
+
+            outputs = rl_model.model(state)
+            _, preds = torch.max(outputs, dim=1)
+
+            action = preds.item()
+
+            new_state = rl_model.apply_action(action, image).to("cuda")
+
+            new_state = rl_model.add_noise(new_state).to("cuda")
+
+            new_state = new_state.float()
+
+            propabilities_after = class_model.extract_propabilities(new_state)
+            _, prediction_after = torch.max(propabilities_after, dim=1)
+
+            propabilities_before = class_model.extract_propabilities(image)
+            _, prediction_before = torch.max(propabilities_before, dim=1)
+
+            reward = rl_model.get_reward(propabilities_before, propabilities_after, label)
+
+
+            prediction_after = prediction_after.item()
+            label = label.item()
+
+            if prediction_after == label:
+                correct_rl_with_noise = correct_rl_with_noise + 1
+
+            total_rl_with_noise = total_rl_with_noise + 1
+
+print('Test Accuracy: %2d%% (%2d/%2d)' % (
+    100. * correct_rl_with_noise / total_rl_with_noise, correct_rl_with_noise, total_rl_with_noise))

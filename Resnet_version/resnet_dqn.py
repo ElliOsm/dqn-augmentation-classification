@@ -89,11 +89,11 @@ class resnetDqn:
         image = action(image)
         return image
 
-    def add_noise(self,image):
+    def add_noise(self, image):
         mean = 0
         var = 10
         sigma = var ** 0.5
-        gaussian = np.random.normal(mean, sigma, (224, 224))
+        gaussian = np.random.normal(mean, sigma, (224, 224, 3))
 
         image = np.squeeze(image)
         transform = transforms.Compose([
@@ -106,8 +106,9 @@ class resnetDqn:
             transforms.ToTensor()
         ])
         image = transform(noisy_image)
-        return image
+        image = torch.unsqueeze(image, 0)
 
+        return image
 
     # def get_reward_according_to_label(self,
     #                                   m_before, label_before,
@@ -151,3 +152,19 @@ class resnetDqn:
         m_after_cc = m_after[0][label_target].to("cpu").detach().numpy()
         difference = m_after_cc - m_before_cc
         return difference
+
+    def getConfidence(self, label, m_after, m_before, more_confident, less_confident):
+        if label == 0:
+            label_target_diff = -1
+        else:
+            label_target_diff = 1
+
+        temp_before = label_target_diff - m_before[0][label].to("cpu").detach().numpy()
+        temp_after = label_target_diff - m_after[0][label].to("cpu").detach().numpy()
+
+        if abs(temp_after - temp_before) > 0:
+             more_confident += 1
+        else:
+            less_confident += 1
+
+        return more_confident,less_confident
