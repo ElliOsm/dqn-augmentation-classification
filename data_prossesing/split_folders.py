@@ -54,3 +54,43 @@ import shutil
 #     else:
 #         destination_test = os.path.join('..', 'data', 'train_i2a2_complete', 'data', 'test', filenames)
 #         shutil.copyfile(filepath, destination_test)
+
+
+#comment in for sports dataset
+# data_dir = os.path.join('..', 'data', 'sports-dataset', 'train.csv')
+# data_csv = pd.read_csv(data_dir)
+# image_dir = os.path.join('..','data','sports-dataset', 'train')
+#
+# data_csv['path'] = data_csv['image_ID'].map(lambda x: os.path.join(image_dir))
+# data_csv['path'] = data_csv['path'].str.cat(data_csv[['image_ID']], sep='/')
+#
+# i = 0
+# for i in range(len(data_csv)):
+#     filenames = data_csv['image_ID'][i]
+#     filelabel = data_csv['label'][i]
+#     filepath = data_csv['path'][i]
+#
+#     if filelabel == 'Cricket':
+#         destination_healthy = os.path.join('..', 'data', 'sports_complete', 'data', '0', filenames)
+#         shutil.copyfile(filepath, destination_healthy)
+#     elif filelabel == 'Wrestling':
+#         destination_pneumonia = os.path.join('..', 'data', 'sports_complete', 'data', '1', filenames)
+#         shutil.copyfile(filepath, destination_pneumonia)
+#     elif filelabel == 'Karate':
+#         destination_pneumonia = os.path.join('..', 'data', 'sports_complete', 'data', '2', filenames)
+#         shutil.copyfile(filepath, destination_pneumonia)
+#     elif filelabel == 'Tennis':
+#         destination_pneumonia = os.path.join('..', 'data', 'sports_complete', 'data', '3', filenames)
+#         shutil.copyfile(filepath, destination_pneumonia)
+#     elif filelabel == 'Badminton':
+#         destination_pneumonia = os.path.join('..', 'data', 'sports_complete', 'data', '4', filenames)
+#         shutil.copyfile(filepath, destination_pneumonia)
+#     elif filelabel == 'Soccer':
+#         destination_pneumonia = os.path.join('..', 'data', 'sports_complete', 'data', '5', filenames)
+#         shutil.copyfile(filepath, destination_pneumonia)
+#     elif filelabel == 'Swimming':
+#         destination_pneumonia = os.path.join('..', 'data', 'sports_complete', 'data', '6', filenames)
+#         shutil.copyfile(filepath, destination_pneumonia)
+#     else:
+#         destination_test = os.path.join('..', 'data', 'sports_complete', 'data', 'unidentified', filenames)
+#         shutil.copyfile(filepath, destination_test)
