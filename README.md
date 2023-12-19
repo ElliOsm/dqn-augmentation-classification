@@ -10,6 +10,6 @@ in order to achieve better results at classifier
 
 I also tried to add noise to the images to see if the results after the classifier would be better
 ## Dataset
-My initial dataset consisted of 2 classes with xray images(pneumonia,healthy)
+My initial [dataset](https://www.kaggle.com/c/i2a2-brasil-pneumonia-classification/overview) consisted of 2 classes with xray images(pneumonia,healthy)
 
 I also created a version with 7 classes with various sport images
